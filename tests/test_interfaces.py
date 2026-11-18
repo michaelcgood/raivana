@@ -144,3 +144,20 @@ def test_env_file_loading(tmp_path, monkeypatch):
     assert os.environ["RAIVANA_T3"] == "from-env"  # real env vars always win
     assert "EMPTY" not in os.environ
     assert config.mask("sk-ant-api03-abcdefghijklmnop") == "sk-ant-...mnop"
+
+
+def test_policy_id_from_file_name(tmp_path):
+    from raivana.composer import slugify
+
+    folder = tmp_path / "hospital"
+    folder.mkdir()
+    (folder / "policy.txt").write_text("Only doctors can prescribe medication.", encoding="utf-8")
+    (tmp_path / "bank-rules.txt").write_text("Tellers cannot approve wire transfers.", encoding="utf-8")
+    runner = CliRunner()
+    out = tmp_path / "out"
+    for f in (folder / "policy.txt", tmp_path / "bank-rules.txt"):
+        r = runner.invoke(main, ["translate", "-e", "rules", "-F", "json", "-f", str(f), "-o", str(out)])
+        assert r.exit_code == 0, r.output
+    assert {p.name for p in out.iterdir()} == {"hospital.raivana.json", "bank-rules.raivana.json"}
+    assert slugify("Hospital EHR Access Policy - Only doctors can prescribe medication") == \
+        "hospital-ehr-access-policy-only-doctors"

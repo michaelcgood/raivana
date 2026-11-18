@@ -119,9 +119,19 @@ def _maybe_rule(sentence: str) -> bool:
     return len(words) >= 4 and bool(_RULEISH.search(sentence))
 
 
+def _first_line(text: str) -> str:
+    for line in text.splitlines():
+        if line.strip():
+            return re.split(r"[.;:!?]", line.strip())[0]
+    return ""
+
+
 def slugify(text: str, default: str = "policy") -> str:
+    """URL/file-safe id, cut at a word boundary (max 40 chars)."""
     s = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
-    return s[:40] or default
+    if len(s) > 40:
+        s = s[:41].rsplit("-", 1)[0]
+    return s.strip("-") or default
 
 
 class PolicyComposer:
@@ -198,7 +208,7 @@ class PolicyComposer:
             pass
 
         hint, _evidence = detect_combining(text)
-        policy = Policy(id=policy_id or slugify(description or text.split(".")[0]),
+        policy = Policy(id=policy_id or slugify(description or _first_line(text)),
                         description=description, language=language, policy_type=policy_type,
                         source_text=text)
         if hint in ("deny-unless-permit",):

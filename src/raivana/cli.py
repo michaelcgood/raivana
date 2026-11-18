@@ -17,7 +17,7 @@ from rich.text import Text
 from . import __version__
 from .analysis import analyze, evaluate
 from .archive import PolicyArchive
-from .composer import ENGINES, PolicyComposer, TranslationResult
+from .composer import ENGINES, PolicyComposer, TranslationResult, slugify
 from .explain import describe_rule
 from .generators import FORMATS, generate
 from .ir import Policy
@@ -25,6 +25,7 @@ from .validate import check_policy
 
 console = Console()
 LEXERS = {"xacml": "xml", "cedar": "rust", "rego": "ruby", "ngac": "javascript", "json": "json"}
+GENERIC_STEMS = {"policy", "policies", "input", "text", "rules", "access", "access-policy", "access_policy"}
 EFFECT_STYLE = {"Permit": "bold green", "Deny": "bold red", "NotApplicable": "yellow"}
 
 
@@ -203,6 +204,11 @@ def translate(text: str | None, file_: str | None, out: str | None, fmt: str, en
     """Translate natural-language policy TEXT (or --file, or stdin) into access control policy code."""
     if file_:
         text = Path(file_).read_text(encoding="utf-8")
+        if not policy_id:
+            # Name the policy after the file; generic names (policy.txt) use the folder name.
+            fp = Path(file_).resolve()
+            name = fp.stem if fp.stem.lower() not in GENERIC_STEMS else fp.parent.name
+            policy_id = slugify(name)
     elif not text and not sys.stdin.isatty():
         text = sys.stdin.read()
     if not text:
