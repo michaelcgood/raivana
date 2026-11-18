@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Raivana - natural language to access control policy</title>
+<style>
+:root{
+  --bg:#0b0f17; --panel:#121826; --panel2:#182033; --line:#243049; --text:#e6ebf5; --muted:#8b97b1;
+  --accent:#5eb0ff; --permit:#3ecf8e; --deny:#ff6b6b; --warn:#ffb547; --info:#7aa2ff;
+  --subject:#5eb0ff; --resource:#ffb547; --action:#3ecf8e; --environment:#c792ea; --cond:#f78c6c; --learned:#ff79c6;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:16px;padding:14px 24px;border-bottom:1px solid var(--line);background:linear-gradient(90deg,#0f1626,#0b0f17)}
+.logo{font-weight:800;font-size:20px;letter-spacing:.5px}
+.logo span{color:var(--accent)}
+.tag{color:var(--muted)}
+.badge{margin-left:auto;font-size:12px;color:var(--muted);border:1px solid var(--line);padding:3px 10px;border-radius:999px}
+.badge a{color:var(--muted)}
+main{display:grid;grid-template-columns:minmax(360px,5fr) 7fr;gap:16px;padding:16px 24px;align-items:start}
+@media (max-width:1000px){main{grid-template-columns:1fr}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+textarea{width:100%;min-height:250px;resize:vertical;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px;font:13px/1.55 var(--mono)}
+select,input,button{font:inherit}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+select,input[type=text]{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.primary{background:var(--accent);color:#04121f;border:none;font-weight:700;padding:8px 18px}
+button.small{padding:2px 8px;font-size:12px}
+button:disabled{opacity:.5;cursor:wait}
+label{color:var(--muted);font-size:12px}
+.hl{margin-top:12px;background:var(--panel2);border-radius:8px;padding:10px;white-space:pre-wrap;font:13px/1.8 var(--mono)}
+.ent{border-radius:4px;padding:1px 3px;border-bottom:2px solid}
+.ent.subject{background:#5eb0ff22;border-color:var(--subject)} .ent.resource{background:#ffb54722;border-color:var(--resource)}
+.ent.action{background:#3ecf8e22;border-color:var(--action)} .ent.environment{background:#c792ea22;border-color:var(--environment)}
+.ent.cond{background:#f78c6c22;border-color:var(--cond)} .ent.learned{background:#ff79c622;border-color:var(--learned)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:-4px -4px 12px}
+.tab{padding:8px 12px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+.tab.on{color:var(--text);border-color:var(--accent)}
+.pane{display:none}.pane.on{display:block}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.stat{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--muted)}
+.stat b{color:var(--text);font-size:15px;margin-right:4px}
+.sent{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:var(--panel2)}
+.sent .src{color:var(--muted);font-size:13px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.sent .src .txt{flex:1}
+.rule{display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-top:1px dashed var(--line)}
+.rule:first-of-type{border-top:none}
+.eff{font:700 11px var(--mono);padding:2px 6px;border-radius:4px;min-width:56px;text-align:center}
+.eff.Permit{background:#3ecf8e22;color:var(--permit)} .eff.Deny{background:#ff6b6b22;color:var(--deny)}
+.eff.NotApplicable{background:#ffb54722;color:var(--warn)}
+.rid{font:12px var(--mono);color:var(--muted);min-width:30px}
+.conf{height:4px;background:var(--line);border-radius:2px;width:60px;overflow:hidden;display:inline-block;vertical-align:middle}
+.conf>div{height:100%;background:var(--accent)}
+.pill{font-size:11px;border:1px solid var(--line);border-radius:999px;padding:0 7px;color:var(--muted)}
+.pill.unresolved{color:var(--deny);border-color:var(--deny)} .pill.translated{color:var(--permit);border-color:#3ecf8e66}
+pre.code{background:#0a0e15;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;max-height:560px;font:12px/1.5 var(--mono);margin:0}
+.find{padding:8px 10px;border-left:3px solid var(--warn);background:var(--panel2);border-radius:6px;margin-bottom:8px;font-size:13px}
+.find.info{border-color:var(--info)} .find.error{border-color:var(--deny)}
+.find code{font-size:11px;color:var(--muted);display:block;margin-top:4px;white-space:pre-wrap}
+.decision{font:800 28px var(--mono);text-align:center;padding:10px;border-radius:10px;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+td,th{border-bottom:1px solid var(--line);padding:5px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+.y{color:var(--permit)} .n{color:var(--deny)}
+.muted{color:var(--muted)}
+svg text{fill:var(--text);font:11px var(--mono)}
+.empty{color:var(--muted);text-align:center;padding:40px}
+footer{color:var(--muted);font-size:12px;padding:8px 24px 24px}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">rai<span>vana</span></div>
+  <div class="tag">Natural language &rarr; logical access control policy</div>
+  <div class="badge">Reference implementation of <a href="https://patents.google.com/patent/US10606957B1/en" target="_blank" rel="noopener">US&nbsp;10,606,957&nbsp;B1</a></div>
+</header>
+<main>
+  <section>
+    <div class="card">
+      <h3>Policy text</h3>
+      <textarea id="text" spellcheck="false" placeholder="Only doctors can prescribe medication.&#10;Nurses may view patient records during business hours."></textarea>
+      <div class="row">
+        <label>Example <select id="example"><option value="">-</option></select></label>
+        <label>Engine <select id="engine">
+          <option value="auto">auto</option><option value="rules">rules (offline)</option>
+          <option value="hybrid">hybrid</option><option value="claude">claude</option></select></label>
+        <label>Model <select id="model">
+          <option value="">sonnet (default)</option><option value="haiku">haiku</option>
+          <option value="opus">opus</option><option value="fable">fable</option></select></label>
+        <label><input type="checkbox" id="route"> auto-route</label>
+      </div>
+      <div class="row">
+        <input type="text" id="pid" placeholder="policy id (optional)" style="flex:1">
+        <button class="primary" id="go">Translate</button>
+      </div>
+      <div id="llmnote" class="muted" style="font-size:12px;margin-top:6px"></div>
+      <div id="hl" class="hl" style="display:none"></div>
+      <div class="legend" id="legend" style="display:none">
+        <span><i style="background:var(--subject)"></i>subject</span><span><i style="background:var(--action)"></i>action</span>
+        <span><i style="background:var(--resource)"></i>resource</span><span><i style="background:var(--environment)"></i>environment</span>
+        <span><i style="background:var(--cond)"></i>condition</span><span><i style="background:var(--learned)"></i>learned</span>
+      </div>
+    </div>
+  </section>
+  <section class="card">
+    <div class="tabs" id="tabs">
+      <div class="tab on" data-p="rules">Rules</div><div class="tab" data-p="code">Code</div>
+      <div class="tab" data-p="graph">NGAC graph</div><div class="tab" data-p="analysis">Analysis</div>
+      <div class="tab" data-p="tester">Tester</div>
+    </div>
+    <div class="pane on" id="p-rules"><div class="empty">Enter a policy and press <b>Translate</b>.</div></div>
+    <div class="pane" id="p-code"><div class="empty">No code yet.</div></div>
+    <div class="pane" id="p-graph"><div class="empty">No graph yet.</div></div>
+    <div class="pane" id="p-analysis"><div class="empty">No analysis yet.</div></div>
+    <div class="pane" id="p-tester">
+      <div class="row" style="margin-top:0" id="probes"></div>
+      <textarea id="req" style="min-height:170px;margin-top:10px">{
+  "subject": {"role": "nurse"},
+  "action": "read",
+  "resource": {"type": "medical_record"},
+  "environment": {"hour": 10}
+}</textarea>
+      <div class="row"><button class="primary" id="evalbtn">Evaluate</button><button id="verifybtn">Verify generated code</button></div>
+      <div id="decision"></div>
+    </div>
+  </section>
+</main>
+<footer>Raivana translates policy text into a validated intermediate representation, then compiles it deterministically to XACML 3.0, NGAC, Cedar and Rego. Always review generated policy before deployment.</footer>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let state = {result:null, session:null, examples:[], fmt:'cedar'};
+
+async function api(path, body){
+  const r = await fetch(path, body ? {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)} : {});
+  if(!r.ok){ throw new Error((await r.json().catch(()=>({detail:r.statusText}))).detail || r.statusText); }
+  return r.json();
+}
+
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === t));
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('on', p.id === 'p-' + t.dataset.p));
+});
+
+async function init(){
+  const h = await api('/api/health');
+  $('#llmnote').textContent = h.llm_available ? 'Claude engine available - "auto" uses hybrid mode (offline first, Claude only where needed).'
+                                              : 'No ANTHROPIC_API_KEY detected - "auto" runs the free offline engine.';
+  state.examples = await api('/api/examples');
+  for(const ex of state.examples){ const o = document.createElement('option'); o.value = ex.name; o.textContent = ex.name; $('#example').append(o); }
+  $('#example').onchange = () => { const ex = state.examples.find(e => e.name === $('#example').value); if(ex){ $('#text').value = ex.text; $('#pid').value = ex.name; renderProbes(ex.probes);} };
+  $('#example').value = 'hospital'; $('#example').onchange();
+}
+
+function renderProbes(probes){
+  $('#probes').innerHTML = '';
+  for(const p of probes || []){
+    const b = document.createElement('button'); b.className = 'small'; b.textContent = p.name;
+    b.onclick = () => { $('#req').value = JSON.stringify(p.request, null, 2); runEval(); };
+    $('#probes').append(b);
+  }
+}
+
+$('#go').onclick = async () => {
+  const btn = $('#go'); btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Translating';
+  try{
+    const res = await api('/api/translate', {text: $('#text').value, engine: $('#engine').value, model: $('#model').value || null,
+      route: $('#route').checked ? 'auto' : 'fixed', policy_id: $('#pid').value || null});
+    show(res);
+  }catch(e){ $('#p-rules').innerHTML = `<div class="find error">${esc(e.message)}</div>`; }
+  btn.disabled = false; btn.textContent = 'Translate';
+};
+
+function show(res){
+  state.result = res; state.session = res.session;
+  renderHighlight(res); renderRules(res); renderCode(res); renderGraph(res); renderAnalysis(res);
+}
+
+function renderHighlight(res){
+  const text = $('#text').value; const spans = [];
+  for(const s of res.sentences){
+    const ents = (s.analysis && s.analysis.entities) || [];
+    for(const e of ents){
+      if(e.kind === 'pronoun' || e.kind === 'attribute' || e.kind === 'qualifier') continue;
+      let cls = e.kind === 'placeholder' ? 'cond' : e.kind === 'learned' ? 'learned' : (e.category || 'subject');
+      if(e.kind === 'universal' || e.kind === 'nobody') cls = 'subject';
+      const tip = e.kind === 'placeholder' ? e.conditions.join(' AND ') : `${e.category || ''}${e.attribute ? '.' + e.attribute : ''}${e.value ? ' = ' + e.value : ''}${e.negated ? ' (negated)' : ''}`;
+      spans.push({start:e.start, end:e.end, cls, tip});
+    }
+  }
+  spans.sort((a,b) => a.start - b.start);
+  let out = '', pos = 0;
+  for(const sp of spans){ if(sp.start < pos) continue; out += esc(text.slice(pos, sp.start)) + `<span class="ent ${sp.cls}" title="${esc(sp.tip)}">${esc(text.slice(sp.start, sp.end))}</span>`; pos = sp.end; }
+  out += esc(text.slice(pos));
+  $('#hl').innerHTML = out; $('#hl').style.display = spans.length ? 'block' : 'none'; $('#legend').style.display = spans.length ? 'flex' : 'none';
+}
+
+function renderRules(res){
+  const rules = Object.fromEntries(res.policy.rules.map(r => [r.id, r]));
+  const sum = Object.fromEntries(res.summary.map(s => [s.id, s.summary]));
+  const translated = res.sentences.filter(s => s.status === 'translated').length;
+  let html = `<div class="stats">
+    <div class="stat"><b>${res.policy.rules.length}</b>rules</div>
+    <div class="stat"><b>${translated}/${res.sentences.filter(s => s.status !== 'not-a-rule' && s.status !== 'meta').length}</b>statements translated</div>
+    <div class="stat"><b>${esc(res.policy_type)}</b>policy type</div>
+    <div class="stat"><b>${esc(res.engine)}</b>engine</div>
+    <div class="stat"><b>${esc(res.policy.combining)}</b>${res.policy.default_effect ? 'default ' + res.policy.default_effect : 'combining'}</div>
+    ${res.usage.length ? `<div class="stat"><b>$${res.cost_usd.toFixed(4)}</b>Claude cost</div>` : ''}</div>`;
+  for(const s of res.sentences){
+    if(s.status === 'not-a-rule') continue;
+    const via = s.engine ? `${s.engine}${s.template ? ':' + s.template : ''}` : '';
+    html += `<div class="sent"><div class="src"><span class="txt">${esc(s.text)}</span>
+      <span class="pill ${s.status}">${s.status}</span>${via ? `<span class="pill">${esc(via)}</span>` : ''}
+      ${s.confidence ? `<span class="conf" title="confidence ${s.confidence}"><div style="width:${Math.round(s.confidence*100)}%"></div></span>` : ''}
+      ${s.status === 'translated' && s.engine === 'rules' ? `<button class="small" onclick="rejectS(${s.index})" title="Reject: try the next matching sample rule">reject</button>` : ''}</div>`;
+    for(const id of s.rule_ids){
+      const r = rules[id];
+      html += `<div class="rule"><span class="eff ${r.effect}">${r.effect.toUpperCase()}</span><span class="rid">${id}</span>
+        <span style="flex:1">${esc(sum[id])}</span><button class="small" onclick="removeR('${id}')" title="Remove this rule">&times;</button></div>`;
+    }
+    if(s.status === 'meta') html += `<div class="muted" style="font-size:12px">Sets the policy combining behaviour.</div>`;
+    if(s.status === 'unresolved') html += `<div class="muted" style="font-size:12px">${esc(s.notes.join(' '))}</div>`;
+    html += `</div>`;
+  }
+  $('#p-rules').innerHTML = html;
+}
+
+async function rejectS(i){ try{ show(await api(`/api/sessions/${state.session}/reject`, {sentence:i})); }catch(e){ alert(e.message); } }
+async function removeR(id){ try{ show(await api(`/api/sessions/${state.session}/remove`, {rule_id:id})); }catch(e){ alert(e.message); } }
+
+function renderCode(res){
+  const fmts = Object.keys(res.artifacts);
+  if(!fmts.includes(state.fmt)) state.fmt = fmts[0];
+  const art = res.artifacts[state.fmt];
+  let html = `<div class="row" style="margin:0 0 10px">${fmts.map(f => `<button class="small" style="${f===state.fmt?'border-color:var(--accent)':''}" onclick="state.fmt='${f}';renderCode(state.result)">${f}</button>`).join('')}
+    <span style="flex:1"></span><button class="small" onclick="copyCode()">copy</button><button class="small" onclick="dl()">download ${esc(art.filename)}</button></div>`;
+  for(const w of art.warnings) html += `<div class="find">${esc(w)}</div>`;
+  html += `<pre class="code" id="codebox">${esc(art.content)}</pre>`;
+  $('#p-code').innerHTML = html;
+}
+function copyCode(){ navigator.clipboard.writeText(state.result.artifacts[state.fmt].content); }
+function dl(){ const a = state.result.artifacts[state.fmt]; const blob = new Blob([a.content], {type:'text/plain'}); const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = a.filename; l.click(); }
+
+function renderGraph(res){
+  const ng = res.artifacts.ngac && res.artifacts.ngac.extra && res.artifacts.ngac.extra.graph;
+  if(!ng){ $('#p-graph').innerHTML = '<div class="empty">Include the ngac format to see the graph.</div>'; return; }
+  const used = new Set(); ng.associations.forEach(a => {used.add('u:'+a.user_attribute); used.add('o:'+a.object_attribute);});
+  ng.prohibitions.forEach(p => {used.add('u:'+p.user_attribute); p.intersection.forEach(t => used.add('o:'+t.replace(/^!/,'')));});
+  const uas = ng.user_attributes.map(u => u.name).filter(n => used.has('u:'+n));
+  const oas = ng.object_attributes.map(o => o.name).filter(n => used.has('o:'+n));
+  const H = Math.max(uas.length, oas.length) * 34 + 60, W = 760, LX = 20, RX = 470, BW = 270;
+  const y = (i) => 50 + i * 34;
+  let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%"><text x="${LX}" y="24" style="fill:var(--muted)">USER ATTRIBUTES</text><text x="${RX}" y="24" style="fill:var(--muted)">OBJECT ATTRIBUTES</text>`;
+  const edge = (u, o, color, dash, label) => { const a = y(uas.indexOf(u)), b = y(oas.indexOf(o.replace(/^!/,''))); if(a < 0 || b < 0) return '';
+    return `<path d="M${LX+BW} ${a} C ${LX+BW+90} ${a}, ${RX-90} ${b}, ${RX} ${b}" stroke="${color}" fill="none" stroke-width="1.6" ${dash?'stroke-dasharray="5 4"':''} opacity=".85"><title>${esc(label)}</title></path>`; };
+  ng.associations.forEach(a => svg += edge(a.user_attribute, a.object_attribute, 'var(--permit)', false, `${a.rule}: ${a.access_rights.join(', ')}`));
+  ng.prohibitions.forEach(p => p.intersection.forEach(t => svg += edge(p.user_attribute, t, 'var(--deny)', true, `${p.rule}: deny ${p.access_rights.join(', ')}`)));
+  const box = (x, i, name, color) => `<rect x="${x}" y="${y(i)-12}" width="${BW}" height="24" rx="6" fill="var(--panel2)" stroke="${color}"/><text x="${x+8}" y="${y(i)+4}">${esc(name.length > 40 ? name.slice(0,39)+'...' : name)}</text>`;
+  uas.forEach((n, i) => svg += box(LX, i, n, 'var(--subject)'));
+  oas.forEach((n, i) => svg += box(RX, i, n, 'var(--resource)'));
+  svg += '</svg>';
+  let html = `<div class="muted" style="font-size:12px;margin-bottom:8px">Policy class <b>${esc(ng.policy_class)}</b>. <span style="color:var(--permit)">Solid</span> = association, <span style="color:var(--deny)">dashed</span> = prohibition. Hover an edge for access rights.</div>` + svg;
+  if(ng.unsupported.length){ html += `<h3 style="margin-top:14px">Enforced outside the graph (obligations / PEP)</h3>` + ng.unsupported.map(u => `<div class="find info">[${esc(u.rule)}] ${esc(u.condition)} <code>${esc(u.reason)}</code></div>`).join(''); }
+  $('#p-graph').innerHTML = html;
+}
+
+function renderAnalysis(res){
+  let html = '';
+  const items = [...res.findings.map(f => ({sev:f.severity, title:f.kind, msg:f.message, w:f.witness})), ...res.issues.map(i => ({sev:i.severity, title:'validation', msg:i.message}))];
+  html += `<h3>Conflicts &amp; validation</h3>` + (items.length ? items.map(f => `<div class="find ${f.sev}"><b>${esc(f.title)}</b> ${esc(f.msg)}${f.w ? `<code>example request: ${esc(JSON.stringify(f.w))}</code>` : ''}</div>`).join('') : '<div class="muted">No conflicts, redundancies or validation issues.</div>');
+  if(res.ambiguities.length) html += `<h3 style="margin-top:14px">Ambiguities flagged by Claude</h3>` + res.ambiguities.map(a => `<div class="find info">${esc(a)}</div>`).join('');
+  if(res.learned.length) html += `<h3 style="margin-top:14px">Learned vocabulary (attribute dictionary)</h3><table><tr><th>attribute</th><th>value</th><th>from</th><th>source</th></tr>` + res.learned.map(l => `<tr><td>${esc(l.attribute || 'action')}</td><td>${esc(l.value)}</td><td>${esc(l.surface)}</td><td>${esc(l.source || 'nlp')}</td></tr>`).join('') + '</table>';
+  if(res.usage.length) html += `<h3 style="margin-top:14px">Claude usage</h3><table><tr><th>model</th><th>input</th><th>cache read</th><th>output</th><th>cost</th></tr>` + res.usage.map(u => `<tr><td>${esc(u.model)}${u.escalated ? ' (escalated)' : ''}</td><td>${u.input_tokens}</td><td>${u.cache_read_tokens}</td><td>${u.output_tokens}</td><td>$${u.cost_usd.toFixed(4)}</td></tr>`).join('') + '</table>';
+  html += `<h3 style="margin-top:14px">NLP analysis</h3><table><tr><th>#</th><th>signature</th><th>top sample rules</th></tr>` + res.sentences.filter(s => s.analysis && s.analysis.signature.length).map(s => `<tr><td>${s.index}</td><td style="font-family:var(--mono)">${esc(s.analysis.signature.join(' '))}</td><td>${s.analysis.candidates.map(c => `${esc(c.sample)} <span class="muted">${c.confidence}</span>`).join('<br>')}</td></tr>`).join('') + '</table>';
+  $('#p-analysis').innerHTML = html;
+}
+
+async function runEval(){
+  if(!state.result){ $('#decision').innerHTML = '<div class="find">Translate a policy first.</div>'; return; }
+  let req; try{ req = JSON.parse($('#req').value); }catch(e){ $('#decision').innerHTML = `<div class="find error">Invalid JSON: ${esc(e.message)}</div>`; return; }
+  try{
+    const d = await api('/api/evaluate', {policy: state.result.policy, request: req});
+    const col = {Permit:'var(--permit)', Deny:'var(--deny)', NotApplicable:'var(--warn)'}[d.decision];
+    let html = `<div class="decision" style="color:${col};background:${col}1a">${d.decision}</div><div class="muted" style="text-align:center;margin-bottom:10px">${esc(d.reason)}</div>
+      <table><tr><th>rule</th><th>effect</th><th>applies</th><th>conditions</th></tr>`;
+    for(const t of d.trace){ html += `<tr><td>${t.rule}</td><td>${t.effect}</td><td class="${t.applicable?'y':'n'}">${t.applicable?'yes':'no'}</td><td>${t.action_match ? '' : '<span class="n">action</span> '}${t.conditions.map(c => `<span class="${c.result?'y':'n'}">${c.result?'&#10003;':'&#10007;'}</span> ${esc(c.condition)} <span class="muted">(${esc(JSON.stringify(c.actual))})</span>`).join('<br>')}</td></tr>`; }
+    $('#decision').innerHTML = html + '</table>';
+  }catch(e){ $('#decision').innerHTML = `<div class="find error">${esc(e.message)}</div>`; }
+}
+$('#evalbtn').onclick = runEval;
+$('#verifybtn').onclick = async () => {
+  if(!state.result) return;
+  $('#decision').innerHTML = '<span class="spinner"></span> Running randomized requests through the reference PDP and the generated code...';
+  const reps = await api('/api/verify', {policy: state.result.policy, n: 300});
+  $('#decision').innerHTML = reps.map(r => r.ok ? `<div class="find info" style="border-color:var(--permit)"><b>${r.engine}</b>: ${r.checked}/${r.checked} decisions agree with the reference PDP</div>`
+    : `<div class="find ${r.available && !r.skipped_reason ? 'error' : 'info'}"><b>${r.engine}</b>: ${esc(r.skipped_reason || r.error || (r.mismatches.length + ' mismatches'))}</div>`).join('');
+};
+init();
+</script>
+</body>
+</html>

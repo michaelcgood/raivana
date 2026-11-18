@@ -1,0 +1,43 @@
+domain: healthcare
+keywords: [patient, clinical, hospital, hipaa, phi, medical, physician, nurse, clinic, ehr]
+attributes:
+  - id: role
+    category: subject
+    values:
+      doctor: [doctor, physician, attending physician, attending, surgeon, clinician, provider]
+      nurse: [nurse, registered nurse, rn, nursing staff, charge nurse]
+      pharmacist: [pharmacist, pharmacy staff]
+      receptionist: [receptionist, front desk staff, front desk, admissions staff]
+      billing_clerk: [billing clerk, billing staff, medical coder]
+      lab_technician: [lab technician, lab tech, laboratory staff]
+      patient: [patient]
+      researcher: [researcher, research staff]
+  - id: department
+    categories: [subject, resource]
+    values:
+      cardiology: [cardiology]
+      oncology: [oncology]
+      pediatrics: [pediatrics, paediatrics]
+      emergency: [emergency department, emergency room, er]
+      radiology: [radiology]
+      psychiatry: [psychiatry, behavioral health, mental health]
+  - id: type
+    category: resource
+    values:
+      medical_record: [medical record, patient record, health record, ehr, electronic health record, patient chart, chart, patient data, phi, protected health information, clinical note, patient file]
+      prescription: [prescription, medication order, medication]
+      lab_result: [lab result, test result, lab report, laboratory result]
+      billing_record: [billing record, billing information, insurance claim, claim]
+      appointment: [appointment, appointment schedule, schedule]
+      imaging: [imaging, x-ray, mri, scan, radiology image]
+      research_data: [research data, de-identified data, anonymized data]
+  - id: sensitivity
+    category: resource
+    aliases: [sensitivity flag]
+    values:
+      psychotherapy: [psychotherapy note, psychotherapy notes]
+      vip: [vip patient, vip record, celebrity record]
+actions:
+  prescribe: [prescribe, order medication]
+  dispense: [dispense]
+  sign: [sign, co-sign, cosign]

@@ -1,0 +1,12 @@
+Hospital EHR Access Policy
+
+Only doctors can prescribe medication.
+Nurses may view patient records during business hours.
+Nurses can view any patient record in an emergency.
+Physicians may update medical records of patients in their department.
+Billing staff can view billing records but cannot view medical records.
+Receptionists can create and update appointments.
+Psychotherapy notes can only be read by psychiatrists.
+Contractors cannot access patient records unless they are on the corporate network.
+Nobody may delete audit logs.
+All other access is denied.

@@ -1,0 +1,31 @@
+domain: cloud
+keywords: [cloud, server, production, deploy, kubernetes, aws, database, bucket, infrastructure, cluster, devops]
+attributes:
+  - id: role
+    category: subject
+    values:
+      devops: [devops engineer, devops, sre, site reliability engineer, platform engineer]
+      dba: [database administrator, dba]
+      service_account: [service account, automation account, ci pipeline]
+      data_scientist: [data scientist, ml engineer]
+  - id: type
+    category: resource
+    values:
+      server: [server, host, instance, vm, virtual machine, node]
+      database: [database, db, data warehouse]
+      bucket: [s3 bucket, storage bucket, bucket, object storage]
+      secret: [secret, api key, access key, encryption key, token]
+      cluster: [kubernetes cluster, cluster, k8s cluster]
+      pipeline: [pipeline, ci/cd pipeline, build pipeline]
+      backup: [backup, snapshot]
+  - id: tier
+    category: resource
+    aliases: [environment tier, stage]
+    values:
+      production: [production, prod, production environment, live environment]
+      staging: [staging, staging environment, pre-production]
+      development: [development, dev, development environment, sandbox]
+actions:
+  restart: [restart, reboot]
+  scale: [scale]
+  rotate: [rotate]

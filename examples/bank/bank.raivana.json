@@ -1,0 +1,485 @@
+{
+  "id": "bank",
+  "description": "",
+  "combining": "deny-overrides",
+  "default_effect": "Deny",
+  "rules": [
+    {
+      "id": "r1",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "teller"
+        }
+      ],
+      "actions": [
+        "read"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "account"
+        }
+      ],
+      "environment": [
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "hour",
+            "datatype": "integer"
+          },
+          "operator": "gte",
+          "value": 9
+        },
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "hour",
+            "datatype": "integer"
+          },
+          "operator": "lt",
+          "value": 17
+        }
+      ],
+      "source_text": "Tellers can view customer accounts during business hours.",
+      "confidence": 1.0,
+      "template": "permit-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r2",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "teller"
+        }
+      ],
+      "actions": [
+        "approve"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "transaction"
+        }
+      ],
+      "environment": [],
+      "source_text": "Tellers cannot approve wire transfers.",
+      "confidence": 1.0,
+      "template": "deny",
+      "engine": "rules"
+    },
+    {
+      "id": "r3",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "manager"
+        }
+      ],
+      "actions": [
+        "approve"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "transaction"
+        },
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "amount",
+            "datatype": "integer"
+          },
+          "operator": "lte",
+          "value": 25000
+        }
+      ],
+      "environment": [],
+      "source_text": "Managers can approve payments up to $25,000.",
+      "confidence": 1.0,
+      "template": "permit-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r4",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "cfo"
+        }
+      ],
+      "actions": [
+        "approve"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "transaction"
+        },
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "amount",
+            "datatype": "integer"
+          },
+          "operator": "gt",
+          "value": 25000
+        }
+      ],
+      "environment": [],
+      "source_text": "Only the CFO may approve payments over $25,000.",
+      "confidence": 1.0,
+      "template": "only-subject-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r5",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "neq",
+          "value": "cfo"
+        }
+      ],
+      "actions": [
+        "approve"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "transaction"
+        },
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "amount",
+            "datatype": "integer"
+          },
+          "operator": "gt",
+          "value": 25000
+        }
+      ],
+      "environment": [],
+      "source_text": "Only the CFO may approve payments over $25,000.",
+      "confidence": 1.0,
+      "template": "only-subject-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r6",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "employment_type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "employee"
+        }
+      ],
+      "actions": [
+        "approve"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "expense_report"
+        },
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "owner",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": {
+            "category": "subject",
+            "id": "id",
+            "datatype": "string"
+          }
+        }
+      ],
+      "environment": [],
+      "source_text": "Employees cannot approve their own expense reports.",
+      "confidence": 1.0,
+      "template": "deny-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r7",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "accountant"
+        }
+      ],
+      "actions": [
+        "read",
+        "write"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "financial_report"
+        }
+      ],
+      "environment": [
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "network",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "corporate"
+        }
+      ],
+      "source_text": "Accountants can read and update the general ledger only from the corporate network.",
+      "confidence": 1.0,
+      "template": "only-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r8",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "accountant"
+        }
+      ],
+      "actions": [
+        "read",
+        "write"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "financial_report"
+        }
+      ],
+      "environment": [
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "network",
+            "datatype": "string"
+          },
+          "operator": "neq",
+          "value": "corporate"
+        }
+      ],
+      "source_text": "Accountants can read and update the general ledger only from the corporate network.",
+      "confidence": 1.0,
+      "template": "only-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r9",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "auditor"
+        }
+      ],
+      "actions": [
+        "read"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "financial_report"
+        }
+      ],
+      "environment": [],
+      "source_text": "Auditors can only read financial records.",
+      "confidence": 1.0,
+      "template": "only-action",
+      "engine": "rules"
+    },
+    {
+      "id": "r10",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "auditor"
+        }
+      ],
+      "actions": [
+        "write",
+        "create",
+        "delete",
+        "approve",
+        "share",
+        "export",
+        "initiate",
+        "reconcile"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "financial_report"
+        }
+      ],
+      "environment": [],
+      "source_text": "Auditors can only read financial records.",
+      "confidence": 1.0,
+      "template": "only-action",
+      "engine": "rules"
+    },
+    {
+      "id": "r11",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "employment_type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "contractor"
+        }
+      ],
+      "actions": [
+        "export"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "payroll"
+        }
+      ],
+      "environment": [],
+      "source_text": "Contractors must not export payroll data.",
+      "confidence": 1.0,
+      "template": "deny",
+      "engine": "rules"
+    }
+  ],
+  "language": "en",
+  "policy_type": "finance",
+  "source_text": "Corporate Banking Payments Policy\n\nTellers can view customer accounts during business hours.\nTellers cannot approve wire transfers.\nManagers can approve payments up to $25,000.\nOnly the CFO may approve payments over $25,000.\nEmployees cannot approve their own expense reports.\nAccountants can read and update the general ledger only from the corporate network.\nAuditors can only read financial records.\nContractors must not export payroll data.\nDeny by default.\n",
+  "metadata": {}
+}

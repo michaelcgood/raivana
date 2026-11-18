@@ -1,0 +1,75 @@
+tests:
+- name: Teller views a customer account at 11:00
+  request:
+    subject:
+      role: teller
+    action: read
+    resource:
+      type: account
+    environment:
+      hour: 11
+  expect: Permit
+- name: Teller approves a wire transfer
+  request:
+    subject:
+      role: teller
+    action: approve
+    resource:
+      type: transaction
+  expect: Deny
+- name: Manager approves a $12,000 payment
+  request:
+    subject:
+      role: manager
+    action: approve
+    resource:
+      type: transaction
+      amount: 12000
+  expect: Permit
+- name: Manager approves a $90,000 payment
+  request:
+    subject:
+      role: manager
+    action: approve
+    resource:
+      type: transaction
+      amount: 90000
+  expect: Deny
+- name: CFO approves a $90,000 payment
+  request:
+    subject:
+      role: cfo
+    action: approve
+    resource:
+      type: transaction
+      amount: 90000
+  expect: Permit
+- name: Employee approves their own expense report
+  request:
+    subject:
+      employment_type: employee
+      role: manager
+      id: u42
+    action: approve
+    resource:
+      type: expense_report
+      owner: u42
+  expect: Deny
+- name: Accountant updates the ledger from home
+  request:
+    subject:
+      role: accountant
+    action: write
+    resource:
+      type: financial_report
+    environment:
+      network: public
+  expect: Deny
+- name: Auditor exports financial records
+  request:
+    subject:
+      role: auditor
+    action: export
+    resource:
+      type: financial_report
+  expect: Deny

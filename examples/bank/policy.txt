@@ -1,0 +1,11 @@
+Corporate Banking Payments Policy
+
+Tellers can view customer accounts during business hours.
+Tellers cannot approve wire transfers.
+Managers can approve payments up to $25,000.
+Only the CFO may approve payments over $25,000.
+Employees cannot approve their own expense reports.
+Accountants can read and update the general ledger only from the corporate network.
+Auditors can only read financial records.
+Contractors must not export payroll data.
+Deny by default.

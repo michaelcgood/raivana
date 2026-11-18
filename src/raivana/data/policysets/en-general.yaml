@@ -1,0 +1,145 @@
+# Natural language policy set (US 10,606,957 B1, element 108) -- English, general.
+#
+# Each sample rule pairs an example sentence with:
+#   signature: the canonical sequence of semantic slots the sentence exhibits
+#   produces:  the logical rules it translates to, expressed over slot groups
+#
+# Slot groups filled from the analysed text:
+#   S  subject conditions        R  resource conditions      C  conditions (time, network, ...)
+#   U  "unless" conditions       X  "except" conditions      A  actions (OTHER = all other actions)
+# Prefix NOT_ negates a group (expanded with De Morgan's law into one rule per condition).
+language: en
+policy_type: general
+samples:
+  - id: permit
+    example: "Managers can approve expense reports."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+
+  - id: permit-condition
+    example: "Nurses may view patient records during business hours."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE, COND]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+
+  - id: permit-everyone
+    example: "Everyone can read the employee handbook."
+    signature: [ALL, PERMIT, ACTION, RESOURCE]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+
+  - id: deny
+    example: "Contractors cannot delete source code."
+    signature: [SUBJECT, DENY, ACTION, RESOURCE]
+    produces:
+      - {effect: Deny, when: [S, R, C]}
+
+  - id: deny-condition
+    example: "Employees must not download confidential documents on personal devices."
+    signature: [SUBJECT, DENY, ACTION, RESOURCE, COND]
+    produces:
+      - {effect: Deny, when: [S, R, C]}
+
+  - id: deny-everyone
+    example: "Nobody may delete audit logs."
+    signature: [NOBODY, PERMIT, ACTION, RESOURCE]
+    produces:
+      - {effect: Deny, when: [S, R, C]}
+
+  - id: deny-all
+    example: "Users must never share passwords."
+    signature: [ALL, DENY, ACTION, RESOURCE]
+    produces:
+      - {effect: Deny, when: [S, R, C]}
+
+  - id: only-subject
+    example: "Only doctors can prescribe medication."
+    signature: [ONLY_SUBJ, SUBJECT, PERMIT, ACTION, RESOURCE]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [NOT_S, R, C]}
+
+  - id: only-subject-condition
+    example: "Only the CFO may approve expenses over $10,000."
+    signature: [ONLY_SUBJ, SUBJECT, PERMIT, ACTION, RESOURCE, COND]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [NOT_S, R, C]}
+
+  - id: only-condition
+    example: "Developers can deploy to production only during business hours."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE, ONLY_COND, COND]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, NOT_C]}
+
+  - id: only-action
+    example: "Auditors can only read financial records."
+    signature: [SUBJECT, PERMIT, ONLY_ACTION, ACTION, RESOURCE]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, C], actions: OTHER}
+
+  - id: permit-unless
+    example: "Managers can approve expense reports unless the amount exceeds $10,000."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE, UNLESS]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, C, U]}
+
+  - id: deny-unless
+    example: "Contractors cannot access financial reports unless they are on the corporate network."
+    signature: [SUBJECT, DENY, ACTION, RESOURCE, UNLESS]
+    produces:
+      - {effect: Deny, when: [S, R, C, NOT_U]}
+      - {effect: Permit, when: [S, R, C, U]}
+
+  - id: nobody-unless
+    example: "No one may access production servers unless they use multi-factor authentication."
+    signature: [NOBODY, PERMIT, ACTION, RESOURCE, UNLESS]
+    produces:
+      - {effect: Deny, when: [S, R, C, NOT_U]}
+      - {effect: Permit, when: [S, R, C, U]}
+
+  - id: permit-except
+    example: "All employees can view the company directory except contractors."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE, EXCEPT]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, C, X]}
+
+  - id: permit-everyone-except
+    example: "Everyone can read documents except restricted ones."
+    signature: [ALL, PERMIT, ACTION, RESOURCE, EXCEPT]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, C, X]}
+
+  - id: deny-except
+    example: "Contractors cannot read documents except public ones."
+    signature: [SUBJECT, DENY, ACTION, RESOURCE, EXCEPT]
+    produces:
+      - {effect: Deny, when: [S, R, C, NOT_X]}
+      - {effect: Permit, when: [S, R, C, X]}
+
+  - id: nobody-except
+    example: "No one can modify the system configuration except administrators."
+    signature: [NOBODY, PERMIT, ACTION, RESOURCE, EXCEPT]
+    produces:
+      - {effect: Deny, when: [S, R, C, NOT_X]}
+      - {effect: Permit, when: [S, R, C, X]}
+
+  - id: require
+    example: "Administrators must use MFA to access production servers."
+    signature: [SUBJECT, REQUIRE, COND, ACTION, RESOURCE]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, NOT_C]}
+
+  - id: require-everyone
+    example: "All users must be on the VPN to access internal documents."
+    signature: [ALL, REQUIRE, COND, ACTION, RESOURCE]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, NOT_C]}

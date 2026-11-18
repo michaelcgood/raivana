@@ -1,0 +1,11 @@
+Cloud Platform Access Policy
+
+Developers can read source code repositories.
+Developers can deploy to staging.
+Only DevOps engineers can deploy to production.
+DevOps engineers can deploy to production only between 10pm and 6am.
+Administrators must use MFA to access production servers.
+Database administrators can manage production databases from managed devices.
+Service accounts cannot delete backups.
+Contractors cannot access secrets unless they are on the VPN.
+Interns cannot access production.

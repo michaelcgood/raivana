@@ -1,0 +1,23 @@
+[
+  {"name": "Developer deploys to staging",
+   "request": {"subject": {"role": "developer"}, "action": "deploy", "resource": {"tier": "staging"}},
+   "expect": "Permit"},
+  {"name": "Developer deploys to production",
+   "request": {"subject": {"role": "developer"}, "action": "deploy", "resource": {"tier": "production"}},
+   "expect": "Deny"},
+  {"name": "DevOps engineer deploys to production at 23:00",
+   "request": {"subject": {"role": "devops"}, "action": "deploy", "resource": {"tier": "production"}, "environment": {"hour": 23}},
+   "expect": "Permit"},
+  {"name": "DevOps engineer deploys to production at 14:00",
+   "request": {"subject": {"role": "devops"}, "action": "deploy", "resource": {"tier": "production"}, "environment": {"hour": 14}},
+   "expect": "Deny"},
+  {"name": "Administrator accesses a production server without MFA",
+   "request": {"subject": {"role": "admin"}, "action": "read", "resource": {"tier": "production", "type": "server"}, "environment": {"mfa": false}},
+   "expect": "Deny"},
+  {"name": "Contractor reads secrets over the VPN",
+   "request": {"subject": {"employment_type": "contractor"}, "action": "read", "resource": {"type": "secret"}, "environment": {"network": "corporate"}},
+   "expect": "Permit"},
+  {"name": "Service account deletes a backup",
+   "request": {"subject": {"role": "service_account"}, "action": "delete", "resource": {"type": "backup"}},
+   "expect": "Deny"}
+]

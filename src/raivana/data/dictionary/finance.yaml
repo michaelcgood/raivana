@@ -1,0 +1,30 @@
+domain: finance
+keywords: [finance, financial, payment, invoice, expense, payroll, ledger, transaction, bank, sox, account]
+attributes:
+  - id: role
+    category: subject
+    values:
+      teller: [teller, bank teller]
+      accountant: [accountant, bookkeeper, accounts payable clerk, ap clerk]
+      analyst: [financial analyst, analyst]
+      cfo: [cfo, chief financial officer, finance director, controller]
+      trader: [trader]
+      loan_officer: [loan officer, underwriter]
+  - id: type
+    category: resource
+    values:
+      transaction: [transaction, payment, wire transfer, funds transfer]
+      expense_report: [expense report, expense, expense claim, reimbursement, reimbursement request]
+      invoice: [invoice, bill, purchase order]
+      payroll: [payroll, payroll data, payroll record, salary, salary data, compensation data, compensation]
+      financial_report: [financial report, financial statement, financial record, ledger, general ledger, quarterly report, earnings report, budget]
+      account: [customer account, bank account, account]
+      loan: [loan, loan application, credit application]
+  - id: amount
+    category: resource
+    datatype: integer
+    description: Monetary amount of the resource (e.g. an expense or transaction), in whole currency units.
+    aliases: [amount, value, total, sum]
+actions:
+  initiate: [initiate, process]
+  reconcile: [reconcile]

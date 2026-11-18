@@ -1,0 +1,516 @@
+{
+  "id": "hospital",
+  "description": "",
+  "combining": "deny-overrides",
+  "default_effect": "Deny",
+  "rules": [
+    {
+      "id": "r1",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "doctor"
+        }
+      ],
+      "actions": [
+        "prescribe"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "prescription"
+        }
+      ],
+      "environment": [],
+      "source_text": "Only doctors can prescribe medication.",
+      "confidence": 1.0,
+      "template": "only-subject",
+      "engine": "rules"
+    },
+    {
+      "id": "r2",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "neq",
+          "value": "doctor"
+        }
+      ],
+      "actions": [
+        "prescribe"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "prescription"
+        }
+      ],
+      "environment": [],
+      "source_text": "Only doctors can prescribe medication.",
+      "confidence": 1.0,
+      "template": "only-subject",
+      "engine": "rules"
+    },
+    {
+      "id": "r3",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "nurse"
+        }
+      ],
+      "actions": [
+        "read"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "medical_record"
+        }
+      ],
+      "environment": [
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "hour",
+            "datatype": "integer"
+          },
+          "operator": "gte",
+          "value": 9
+        },
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "hour",
+            "datatype": "integer"
+          },
+          "operator": "lt",
+          "value": 17
+        }
+      ],
+      "source_text": "Nurses may view patient records during business hours.",
+      "confidence": 1.0,
+      "template": "permit-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r4",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "nurse"
+        }
+      ],
+      "actions": [
+        "read"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "medical_record"
+        }
+      ],
+      "environment": [
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "emergency",
+            "datatype": "boolean"
+          },
+          "operator": "eq",
+          "value": true
+        }
+      ],
+      "source_text": "Nurses can view any patient record in an emergency.",
+      "confidence": 1.0,
+      "template": "permit-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r5",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "doctor"
+        }
+      ],
+      "actions": [
+        "write"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "medical_record"
+        },
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "department",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": {
+            "category": "subject",
+            "id": "department",
+            "datatype": "string"
+          }
+        }
+      ],
+      "environment": [],
+      "source_text": "Physicians may update medical records of patients in their department.",
+      "confidence": 1.0,
+      "template": "permit-condition",
+      "engine": "rules"
+    },
+    {
+      "id": "r6",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "billing_clerk"
+        }
+      ],
+      "actions": [
+        "read"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "billing_record"
+        }
+      ],
+      "environment": [],
+      "source_text": "Billing staff can view billing records",
+      "confidence": 1.0,
+      "template": "permit",
+      "engine": "rules"
+    },
+    {
+      "id": "r7",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "billing_clerk"
+        }
+      ],
+      "actions": [
+        "read"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "medical_record"
+        }
+      ],
+      "environment": [],
+      "source_text": "Billing staff cannot view medical records.",
+      "confidence": 1.0,
+      "template": "deny",
+      "engine": "rules"
+    },
+    {
+      "id": "r8",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "receptionist"
+        }
+      ],
+      "actions": [
+        "create",
+        "write"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "appointment"
+        }
+      ],
+      "environment": [],
+      "source_text": "Receptionists can create and update appointments.",
+      "confidence": 1.0,
+      "template": "permit",
+      "engine": "rules"
+    },
+    {
+      "id": "r9",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "psychiatrist"
+        }
+      ],
+      "actions": [
+        "read"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "sensitivity",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "psychotherapy"
+        }
+      ],
+      "environment": [],
+      "source_text": "Psychotherapy notes can only be read by psychiatrists.",
+      "confidence": 1.0,
+      "template": "only-subject",
+      "engine": "rules"
+    },
+    {
+      "id": "r10",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "role",
+            "datatype": "string"
+          },
+          "operator": "neq",
+          "value": "psychiatrist"
+        }
+      ],
+      "actions": [
+        "read"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "sensitivity",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "psychotherapy"
+        }
+      ],
+      "environment": [],
+      "source_text": "Psychotherapy notes can only be read by psychiatrists.",
+      "confidence": 1.0,
+      "template": "only-subject",
+      "engine": "rules"
+    },
+    {
+      "id": "r11",
+      "effect": "Deny",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "employment_type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "contractor"
+        }
+      ],
+      "actions": [],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "medical_record"
+        }
+      ],
+      "environment": [
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "network",
+            "datatype": "string"
+          },
+          "operator": "neq",
+          "value": "corporate"
+        }
+      ],
+      "source_text": "Contractors cannot access patient records unless they are on the corporate network.",
+      "confidence": 1.0,
+      "template": "deny-unless",
+      "engine": "rules"
+    },
+    {
+      "id": "r12",
+      "effect": "Permit",
+      "description": "",
+      "subject": [
+        {
+          "attribute": {
+            "category": "subject",
+            "id": "employment_type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "contractor"
+        }
+      ],
+      "actions": [],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "medical_record"
+        }
+      ],
+      "environment": [
+        {
+          "attribute": {
+            "category": "environment",
+            "id": "network",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "corporate"
+        }
+      ],
+      "source_text": "Contractors cannot access patient records unless they are on the corporate network.",
+      "confidence": 1.0,
+      "template": "deny-unless",
+      "engine": "rules"
+    },
+    {
+      "id": "r13",
+      "effect": "Deny",
+      "description": "",
+      "subject": [],
+      "actions": [
+        "delete"
+      ],
+      "resource": [
+        {
+          "attribute": {
+            "category": "resource",
+            "id": "type",
+            "datatype": "string"
+          },
+          "operator": "eq",
+          "value": "audit_log"
+        }
+      ],
+      "environment": [],
+      "source_text": "Nobody may delete audit logs.",
+      "confidence": 1.0,
+      "template": "deny-everyone",
+      "engine": "rules"
+    }
+  ],
+  "language": "en",
+  "policy_type": "healthcare",
+  "source_text": "Hospital EHR Access Policy\n\nOnly doctors can prescribe medication.\nNurses may view patient records during business hours.\nNurses can view any patient record in an emergency.\nPhysicians may update medical records of patients in their department.\nBilling staff can view billing records but cannot view medical records.\nReceptionists can create and update appointments.\nPsychotherapy notes can only be read by psychiatrists.\nContractors cannot access patient records unless they are on the corporate network.\nNobody may delete audit logs.\nAll other access is denied.\n",
+  "metadata": {}
+}

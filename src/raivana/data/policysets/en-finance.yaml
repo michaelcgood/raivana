@@ -1,0 +1,18 @@
+language: en
+policy_type: finance
+samples:
+  - id: fin-segregation-of-duties
+    example: "Employees cannot approve their own expense reports."
+    signature: [SUBJECT, DENY, ACTION, RESOURCE, COND]
+    produces:
+      - {effect: Deny, when: [S, R, C]}
+    attributes:
+      - {id: role, category: subject, value: treasurer, surfaces: [treasurer, treasury analyst]}
+
+  - id: fin-approval-limit
+    example: "Managers can approve payments up to $5,000."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE, COND]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+    attributes:
+      - {id: type, category: resource, value: purchase_requisition, surfaces: [purchase requisition, requisition]}

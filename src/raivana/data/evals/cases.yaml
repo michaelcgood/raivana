@@ -1,0 +1,225 @@
+# Behavioural evaluation suite.
+#
+# Each case is one natural-language policy statement plus access requests and whether
+# they should be allowed. Grading is behavioural (does the generated policy make the
+# right decisions?) rather than textual, so any correct IR passes -- regardless of
+# which engine produced it or how the rules are factored.
+#
+# Request shorthand: s = subject, a = action, r = resource, e = environment.
+# `allow` is true when the decision must be Permit, false when it must not be.
+# `tier: hard` marks informal phrasing aimed at the Claude engine.
+cases:
+  - id: only-subject
+    text: Only doctors can prescribe medication.
+    checks:
+      - {s: {role: doctor}, a: prescribe, r: {type: prescription}, allow: true}
+      - {s: {role: nurse}, a: prescribe, r: {type: prescription}, allow: false}
+
+  - id: time-window
+    text: Nurses may view patient records during business hours.
+    checks:
+      - {s: {role: nurse}, a: read, r: {type: medical_record}, e: {hour: 10}, allow: true}
+      - {s: {role: nurse}, a: read, r: {type: medical_record}, e: {hour: 20}, allow: false}
+      - {s: {role: receptionist}, a: read, r: {type: medical_record}, e: {hour: 10}, allow: false}
+
+  - id: explicit-hours
+    text: Pharmacists can dispense prescriptions between 8am and 6pm.
+    checks:
+      - {s: {role: pharmacist}, a: dispense, r: {type: prescription}, e: {hour: 9}, allow: true}
+      - {s: {role: pharmacist}, a: dispense, r: {type: prescription}, e: {hour: 18}, allow: false}
+
+  - id: deny-unless-network
+    text: Contractors cannot access financial reports unless they are on the corporate network.
+    checks:
+      - {s: {employment_type: contractor}, a: read, r: {type: financial_report}, e: {network: public}, allow: false}
+      - {s: {employment_type: contractor}, a: read, r: {type: financial_report}, e: {network: corporate}, allow: true}
+
+  - id: permit-unless-amount
+    text: Managers can approve expense reports unless the amount exceeds $10,000.
+    checks:
+      - {s: {role: manager}, a: approve, r: {type: expense_report, amount: 500}, allow: true}
+      - {s: {role: manager}, a: approve, r: {type: expense_report, amount: 20000}, allow: false}
+
+  - id: require-mfa
+    text: Administrators must use MFA to access production servers.
+    checks:
+      - {s: {role: admin}, a: read, r: {type: server, tier: production}, e: {mfa: true}, allow: true}
+      - {s: {role: admin}, a: read, r: {type: server, tier: production}, e: {mfa: false}, allow: false}
+
+  - id: except-subject
+    text: All employees can view the company directory except contractors.
+    checks:
+      - {s: {employment_type: employee}, a: read, r: {type: directory}, allow: true}
+      - {s: {employment_type: contractor}, a: read, r: {type: directory}, allow: false}
+
+  - id: nobody
+    text: Nobody may delete audit logs.
+    checks:
+      - {s: {role: admin}, a: delete, r: {type: audit_log}, allow: false}
+      - {s: {role: security}, a: delete, r: {type: audit_log}, allow: false}
+
+  - id: nobody-except
+    text: No one can modify the system configuration except administrators.
+    checks:
+      - {s: {role: admin}, a: write, r: {type: configuration}, allow: true}
+      - {s: {role: developer}, a: write, r: {type: configuration}, allow: false}
+
+  - id: only-action
+    text: Auditors can only read financial records.
+    checks:
+      - {s: {role: auditor}, a: read, r: {type: financial_report}, allow: true}
+      - {s: {role: auditor}, a: write, r: {type: financial_report}, allow: false}
+      - {s: {role: auditor}, a: delete, r: {type: financial_report}, allow: false}
+
+  - id: same-department
+    text: Physicians may update medical records of patients in their department.
+    checks:
+      - {s: {role: doctor, department: cardiology}, a: write, r: {type: medical_record, department: cardiology}, allow: true}
+      - {s: {role: doctor, department: cardiology}, a: write, r: {type: medical_record, department: oncology}, allow: false}
+
+  - id: own-resource
+    text: Employees can edit their own profiles.
+    checks:
+      - {s: {employment_type: employee, id: u1}, a: write, r: {type: profile, owner: u1}, allow: true}
+      - {s: {employment_type: employee, id: u1}, a: write, r: {type: profile, owner: u2}, allow: false}
+
+  - id: passive-only
+    text: Medical records can only be viewed by doctors and nurses.
+    checks:
+      - {s: {role: doctor}, a: read, r: {type: medical_record}, allow: true}
+      - {s: {role: nurse}, a: read, r: {type: medical_record}, allow: true}
+      - {s: {role: receptionist}, a: read, r: {type: medical_record}, allow: false}
+
+  - id: no-subject-flip
+    text: No contractor may download confidential documents on personal devices.
+    checks:
+      - {s: {employment_type: contractor}, a: export, r: {type: document, classification: confidential}, e: {device: unmanaged}, allow: false}
+
+  - id: clearance
+    text: Users with clearance level 3 or higher can read restricted documents.
+    checks:
+      - {s: {clearance: 4}, a: read, r: {type: document, classification: restricted}, allow: true}
+      - {s: {clearance: 2}, a: read, r: {type: document, classification: restricted}, allow: false}
+
+  - id: break-glass
+    text: Nurses can view any patient record in an emergency.
+    checks:
+      - {s: {role: nurse}, a: read, r: {type: medical_record}, e: {emergency: true}, allow: true}
+      - {s: {role: nurse}, a: read, r: {type: medical_record}, e: {emergency: false}, allow: false}
+
+  - id: but-clause
+    text: Billing staff can view billing records but cannot view medical records.
+    checks:
+      - {s: {role: billing_clerk}, a: read, r: {type: billing_record}, allow: true}
+      - {s: {role: billing_clerk}, a: read, r: {type: medical_record}, allow: false}
+
+  - id: multi-action
+    text: Receptionists can create and update appointments.
+    checks:
+      - {s: {role: receptionist}, a: create, r: {type: appointment}, allow: true}
+      - {s: {role: receptionist}, a: write, r: {type: appointment}, allow: true}
+      - {s: {role: receptionist}, a: delete, r: {type: appointment}, allow: false}
+
+  - id: up-to
+    text: Managers can approve payments up to $5,000.
+    checks:
+      - {s: {role: manager}, a: approve, r: {type: transaction, amount: 5000}, allow: true}
+      - {s: {role: manager}, a: approve, r: {type: transaction, amount: 5001}, allow: false}
+
+  - id: only-cfo-over
+    text: Only the CFO may approve payments over $25,000.
+    checks:
+      - {s: {role: cfo}, a: approve, r: {type: transaction, amount: 50000}, allow: true}
+      - {s: {role: manager}, a: approve, r: {type: transaction, amount: 50000}, allow: false}
+
+  - id: only-condition-network
+    text: Accountants can update the general ledger only from the corporate network.
+    checks:
+      - {s: {role: accountant}, a: write, r: {type: financial_report}, e: {network: corporate}, allow: true}
+      - {s: {role: accountant}, a: write, r: {type: financial_report}, e: {network: public}, allow: false}
+
+  - id: overnight-window
+    text: DevOps engineers can deploy to production only between 10pm and 6am.
+    checks:
+      - {s: {role: devops}, a: deploy, r: {tier: production}, e: {hour: 23}, allow: true}
+      - {s: {role: devops}, a: deploy, r: {tier: production}, e: {hour: 3}, allow: true}
+      - {s: {role: devops}, a: deploy, r: {tier: production}, e: {hour: 14}, allow: false}
+
+  - id: weekend
+    text: Interns cannot access source code on weekends.
+    checks:
+      - {s: {role: intern}, a: read, r: {type: source_code}, e: {day_of_week: sat}, allow: false}
+
+  - id: devices
+    text: Employees must not download confidential documents on personal devices.
+    checks:
+      - {s: {employment_type: employee}, a: export, r: {type: document, classification: confidential}, e: {device: unmanaged}, allow: false}
+
+  - id: without
+    text: Contractors cannot access the code repository without MFA.
+    checks:
+      - {s: {employment_type: contractor}, a: read, r: {type: source_code}, e: {mfa: false}, allow: false}
+      - {s: {employment_type: contractor}, a: read, r: {type: source_code}, e: {mfa: true}, allow: true}
+
+  - id: restricted-to
+    text: Payroll data is restricted to HR staff.
+    checks:
+      - {s: {department: hr}, a: read, r: {type: payroll}, allow: true}
+      - {s: {department: engineering}, a: read, r: {type: payroll}, allow: false}
+
+  - id: have-access
+    text: Security analysts have access to audit logs.
+    checks:
+      - {s: {role: security}, a: read, r: {type: audit_log}, allow: true}
+      - {s: {role: developer}, a: read, r: {type: audit_log}, allow: false}
+
+  - id: cardiology-nurses
+    text: Cardiology nurses can update lab results.
+    checks:
+      - {s: {role: nurse, department: cardiology}, a: write, r: {type: lab_result}, allow: true}
+      - {s: {role: nurse, department: oncology}, a: write, r: {type: lab_result}, allow: false}
+
+  - id: after-time
+    text: Support agents cannot reset passwords after 8pm.
+    checks:
+      - {s: {role: support}, a: reset, r: {type: password}, e: {hour: 21}, allow: false}
+
+  - id: everyone
+    text: Everyone can read the employee handbook.
+    checks:
+      - {s: {role: guest}, a: read, r: {type: handbook}, allow: true}
+      - {s: {role: intern}, a: delete, r: {type: handbook}, allow: false}
+
+  # ---------------------------------------------------------------- hard (informal phrasing)
+  - id: hard-cfo-signoff
+    tier: hard
+    text: Wire transfers above fifty thousand dollars need sign-off from the CFO; nobody else gets to approve them.
+    checks:
+      - {s: {role: cfo}, a: approve, r: {type: transaction, amount: 60000}, allow: true}
+      - {s: {role: manager}, a: approve, r: {type: transaction, amount: 60000}, allow: false}
+
+  - id: hard-hands-off
+    tier: hard
+    text: Interns should keep their hands off production databases, full stop.
+    checks:
+      - {s: {role: intern}, a: write, r: {type: database, tier: production}, allow: false}
+      - {s: {role: intern}, a: read, r: {type: database, tier: production}, allow: false}
+
+  - id: hard-night-shift
+    tier: hard
+    text: Outside of the 9-to-5 window, the help desk is not allowed to reset anybody's credentials.
+    checks:
+      - {s: {role: support}, a: reset, r: {type: password}, e: {hour: 22}, allow: false}
+
+  - id: hard-own-claims
+    tier: hard
+    text: It is never OK for staff to sign off on expense claims they submitted themselves.
+    checks:
+      - {s: {role: manager, id: u7}, a: approve, r: {type: expense_report, owner: u7}, allow: false}
+
+  - id: hard-vip
+    tier: hard
+    text: VIP patient charts are off-limits to everybody except attending physicians.
+    checks:
+      - {s: {role: doctor}, a: read, r: {type: medical_record, sensitivity: vip}, allow: true}
+      - {s: {role: nurse}, a: read, r: {type: medical_record, sensitivity: vip}, allow: false}

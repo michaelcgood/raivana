@@ -1,0 +1,129 @@
+# Core attribute dictionary: organisation-wide vocabulary.
+# Each value maps a canonical attribute value to the surface phrases that mean it.
+domain: core
+universal_subjects: [user, users, folks, anybody else, everyone, anyone, everybody, any user, all users, person, people, staff member, anybody, all staff, staff, personnel, workforce member]
+nobody_subjects: [nobody, no one, no user, no users, no person, no staff member]
+attributes:
+  - id: role
+    category: subject
+    description: Job function of the requesting user.
+    aliases: [role, job role, job function]
+    values:
+      admin: [administrator, admin, sysadmin, system administrator, it administrator, superuser]
+      manager: [manager, supervisor, team lead, line manager, department head]
+      auditor: [auditor, internal auditor, compliance officer, compliance team]
+      developer: [developer, engineer, software engineer, programmer]
+      support: [support agent, support staff, help desk, helpdesk, customer support]
+      security: [security team, security analyst, security officer, security engineer]
+      intern: [intern, trainee]
+      executive: [executive, c-level executive, senior leadership]
+      guest: [guest, visitor]
+  - id: employment_type
+    category: subject
+    aliases: [employment type, worker type]
+    values:
+      employee: [employee, full-time employee, staff employee]
+      contractor: [contractor, vendor, consultant, third party, third-party, external partner, temp]
+  - id: department
+    categories: [subject, resource]
+    aliases: [department, team, division, business unit, unit]
+    values:
+      engineering: [engineering, engineering department, r&d]
+      finance: [finance department, finance team, accounting department]
+      hr: [hr, human resources, people team, hr department, hr staff]
+      sales: [sales, sales team, sales department]
+      marketing: [marketing, marketing team]
+      legal: [legal, legal department, legal team]
+      it: [it department, it team, it staff]
+  - id: clearance
+    category: subject
+    datatype: integer
+    aliases: [clearance, clearance level, security clearance, security level]
+  - id: id
+    category: subject
+    aliases: [user id, username, identity]
+  - id: type
+    category: resource
+    description: Kind of resource being accessed.
+    aliases: [resource type, document type]
+    values:
+      document: [document, file, doc]
+      report: [report]
+      handbook: [employee handbook, handbook, policy manual]
+      directory: [employee directory, company directory, directory, org chart]
+      audit_log: [audit log, audit trail, access log, security log, log]
+      source_code: [source code, code repository, repository, repo, codebase]
+      configuration: [configuration, system configuration, system settings, settings, config]
+      profile: [profile, user profile, employee profile]
+      password: [password, credentials]
+      personnel_file: [personnel file, personnel record, employee record, hr record]
+      performance_review: [performance review, performance evaluation, appraisal]
+      ticket: [ticket, support ticket, case]
+  - id: classification
+    category: resource
+    aliases: [classification, sensitivity, data classification]
+    values:
+      public: [public]
+      internal: [internal, internal-only]
+      confidential: [confidential, sensitive]
+      restricted: [restricted, secret, top secret, highly confidential, highly sensitive]
+  - id: owner
+    category: resource
+    aliases: [owner, author, creator]
+  - id: hour
+    category: environment
+    datatype: integer
+    description: Hour of day (0-23) in the organisation local time zone.
+    aliases: [hour, time of day]
+  - id: day_of_week
+    category: environment
+    aliases: [day, day of week]
+    values:
+      mon: [monday]
+      tue: [tuesday]
+      wed: [wednesday]
+      thu: [thursday]
+      fri: [friday]
+      sat: [saturday]
+      sun: [sunday]
+  - id: network
+    category: environment
+    aliases: [network]
+    values:
+      corporate: [corporate network, company network, office network, vpn, internal network, on-premises network, intranet, on site, on-site]
+      public: [public network, public wifi, public wi-fi, untrusted network]
+  - id: device
+    category: environment
+    aliases: [device]
+    values:
+      managed: [managed device, company device, company laptop, corporate device, company-issued device, managed laptop]
+      unmanaged: [personal device, unmanaged device, byod, personal laptop, personal phone]
+  - id: mfa
+    category: environment
+    datatype: boolean
+    aliases: [mfa status]
+    values:
+      "true": [mfa, multi-factor authentication, multifactor authentication, two-factor authentication, 2fa, strong authentication]
+  - id: emergency
+    category: environment
+    datatype: boolean
+    values:
+      "true": [emergency, break-glass, break glass, emergency situation]
+  - id: on_call
+    category: subject
+    datatype: boolean
+    values:
+      "true": [on-call, on call]
+actions:
+  read: [read, view, see, look at, open, browse, display, query, retrieve, look up, inspect]
+  write: [write, edit, modify, update, change, amend, alter]
+  create: [create, add, upload, submit]
+  delete: [delete, remove, erase, destroy, purge, wipe]
+  approve: [approve, authorize, sign off on, ratify]
+  share: [share, send, forward, distribute, disclose, publish]
+  export: [export, download, print, copy, extract]
+  execute: [execute, run]
+  deploy: [deploy, release, push to]
+  manage: [manage, administer, configure]
+  reset: [reset]
+  "*": [access, use, have access to, work with, handle]

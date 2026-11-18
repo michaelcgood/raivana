@@ -1,0 +1,30 @@
+# Healthcare policy set. Samples here re-use the general signatures but contribute
+# domain vocabulary to the attribute dictionary (claims 4, 11, 18) and serve as
+# domain-specific few-shot examples for the Claude engine.
+language: en
+policy_type: healthcare
+samples:
+  - id: hc-break-glass
+    example: "Nurses can view any patient record in an emergency."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE, COND]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+    attributes:
+      - {id: role, category: subject, value: nurse_practitioner, surfaces: [nurse practitioner, np]}
+
+  - id: hc-own-department
+    example: "Physicians may update medical records of patients in their department."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE, COND]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+    attributes:
+      - {id: role, category: subject, value: resident, surfaces: [resident, resident physician]}
+
+  - id: hc-psychotherapy
+    example: "Only psychiatrists can read psychotherapy notes."
+    signature: [ONLY_SUBJ, SUBJECT, PERMIT, ACTION, RESOURCE]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [NOT_S, R, C]}
+    attributes:
+      - {id: role, category: subject, value: psychiatrist, surfaces: [psychiatrist, psychologist, therapist]}

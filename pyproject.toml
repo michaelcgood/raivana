@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "raivana"
+version = "0.1.0"
+description = "Translate natural-language access control policy into XACML, NGAC, Cedar and Rego. Reference implementation of US Patent 10,606,957 B1."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.10"
+authors = [
+  { name = "Michael Good" },
+  { name = "Benjamin Coffinberger" },
+]
+keywords = ["access control", "iam", "abac", "xacml", "ngac", "cedar", "opa", "rego", "policy", "nlp", "llm", "claude", "mcp"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Topic :: Security",
+  "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+  "pydantic>=2.6",
+  "pyyaml>=6.0",
+  "click>=8.1",
+  "rich>=13.0",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=1.0"]
+server = ["fastapi>=0.110", "uvicorn>=0.27"]
+mcp = ["mcp>=2.0"]
+verify = ["cedarpy>=4.0"]
+all = ["raivana[llm,server,mcp,verify]"]
+dev = ["raivana[all]", "pytest>=8", "httpx>=0.27", "ruff>=0.5"]
+
+[project.scripts]
+raivana = "raivana.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/michaelcgood/raivana"
+Patent = "https://patents.google.com/patent/US10606957B1/en"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/raivana"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/raivana", "tests", "docs", "examples", "README.md", "LICENSE", "NOTICE", "PATENTS.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501", "B008", "UP007", "UP045"]

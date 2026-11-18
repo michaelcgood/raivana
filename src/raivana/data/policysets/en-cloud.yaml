@@ -1,0 +1,20 @@
+language: en
+policy_type: cloud
+samples:
+  - id: cloud-prod-mfa
+    example: "Engineers must use MFA to access production servers."
+    signature: [SUBJECT, REQUIRE, COND, ACTION, RESOURCE]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, NOT_C]}
+    attributes:
+      - {id: role, category: subject, value: oncall_engineer, surfaces: [on-call engineer, incident commander]}
+
+  - id: cloud-change-window
+    example: "Service accounts can deploy to production only between 10pm and 6am."
+    signature: [SUBJECT, PERMIT, ACTION, RESOURCE, ONLY_COND, COND]
+    produces:
+      - {effect: Permit, when: [S, R, C]}
+      - {effect: Deny, when: [S, R, NOT_C]}
+    attributes:
+      - {id: type, category: resource, value: secrets_vault, surfaces: [vault, secrets vault, key vault]}
