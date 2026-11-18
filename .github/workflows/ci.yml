@@ -19,8 +19,9 @@ jobs:
         include:
           - os: windows-latest
             python: "3.12"
-          - os: macos-latest
-            python: "3.12"
+          # macOS runners aren't available to this private repo; re-add once the repo is public:
+          # - os: macos-latest
+          #   python: "3.12"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
