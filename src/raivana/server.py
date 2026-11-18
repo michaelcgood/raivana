@@ -26,11 +26,13 @@ from . import __version__
 from .analysis import analyze, evaluate
 from .archive import PolicyArchive
 from .composer import ENGINES, PolicyComposer, TranslationResult
+from .config import load_env
 from .engines.llm import MODEL_ALIASES, llm_available
 from .generators import FORMATS, generate_all
 from .ir import AccessRequest, Policy
 from .validate import check_policy
 
+load_env()
 MAX_CHARS = int(os.environ.get("RAIVANA_MAX_CHARS", "20000"))
 TOKEN = os.environ.get("RAIVANA_SERVER_TOKEN")
 LLM_DISABLED = os.environ.get("RAIVANA_DISABLE_LLM") == "1"

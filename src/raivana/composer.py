@@ -25,6 +25,7 @@ from typing import Any
 
 from . import nlp
 from .analysis import Finding, analyze
+from .config import load_env
 from .dictionary import AttributeDictionary
 from .engines.llm import ClaudeEngine, LLMUsage, ModelRouter, llm_available, resolve_model
 from .engines.rules import RulesEngine, SentenceAnalysis, detect_combining, split_clauses
@@ -129,6 +130,7 @@ class PolicyComposer:
                  threshold: float = 0.6, hybrid_threshold: float = 0.85, learn: bool = True, effort: str = "medium",
                  provider: str | None = None, extra_dictionaries: Iterable[str] = (),
                  extra_policy_sets: Iterable[str] = (), llm_client: Any = None) -> None:
+        load_env()  # pick up ANTHROPIC_API_KEY etc. from .env files (never overrides real env vars)
         if engine not in ENGINES:
             raise ValueError(f"engine must be one of {ENGINES}")
         user_dict = Path(os.environ.get("RAIVANA_HOME", Path.home() / ".raivana")) / "dictionary.yaml"

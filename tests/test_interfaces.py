@@ -124,3 +124,23 @@ def test_model_router():
     long = ["Unless otherwise approved, only managers, except in emergencies, may ..."] * 6
     assert r.choose(long) == "claude-opus-5-5"
     assert ModelRouter().choose(long) == "claude-sonnet-5-5"
+
+
+def test_env_file_loading(tmp_path, monkeypatch):
+    from raivana import config
+
+    (tmp_path / ".env").write_text('# comment\nexport RAIVANA_T1="quoted value"\nRAIVANA_T2=plain # note\n'
+                                   "RAIVANA_T3=from-file\nEMPTY=\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setenv("RAIVANA_HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("RAIVANA_T3", "from-env")
+    for k in ("RAIVANA_T1", "RAIVANA_T2", "EMPTY"):
+        monkeypatch.delenv(k, raising=False)
+    config.load_env(force=True)
+    import os
+
+    assert os.environ["RAIVANA_T1"] == "quoted value"
+    assert os.environ["RAIVANA_T2"] == "plain"
+    assert os.environ["RAIVANA_T3"] == "from-env"  # real env vars always win
+    assert "EMPTY" not in os.environ
+    assert config.mask("sk-ant-api03-abcdefghijklmnop") == "sk-ant-...mnop"

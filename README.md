@@ -74,24 +74,112 @@ when {
 - **Built for AI agents.** The MCP server lets Claude and other agents write, test and analyse
   access policy as tools.
 
-## Quickstart
+## Getting started, step by step
+
+You need **Python 3.10 or newer** and **Git**. Copy each command and run it in a terminal.
+Lines starting with `#` are comments; you don't type them.
+
+### 1. Check Python and Git
+
+| Windows (PowerShell) | macOS / Linux (Terminal) |
+|---|---|
+| `py --version` | `python3 --version` |
+| `git --version` | `git --version` |
+
+If Python is missing or older than 3.10, install it from [python.org/downloads](https://www.python.org/downloads/).
+On Windows, tick **"Add python.exe to PATH"** in the installer. If Git is missing, install it from
+[git-scm.com/downloads](https://git-scm.com/downloads). Then **close and reopen the terminal**.
+
+### 2. Download Raivana and install it
+
+**Windows (PowerShell)**
+
+```powershell
+git clone https://github.com/michaelcgood/raivana.git
+cd raivana
+py -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -e ".[all]"
+```
+
+> If PowerShell says *"running scripts is disabled on this system"*, run
+> `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, answer `Y`, then repeat the `Activate.ps1` line.
+
+**macOS / Linux**
 
 ```bash
-pip install "raivana[all]"        # or: git clone ... && pip install -e ".[all]"
-
-raivana demo                      # end-to-end showcase, offline
-raivana translate -f policy.txt -o out/          # writes .xml .pml .cedar .rego .raivana.json
-raivana test out/policy.raivana.json -s role=nurse -a read -R type=medical_record -E hour=22
-raivana check out/policy.raivana.json            # conflicts, redundancy, validation
-raivana verify out/policy.raivana.json           # differential check vs Cedar / OPA
-raivana serve                                    # web UI at http://127.0.0.1:8000
+git clone https://github.com/michaelcgood/raivana.git
+cd raivana
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e ".[all]"
 ```
+
+When `(.venv)` appears at the start of your prompt, the environment is active. **Each time you open a new
+terminal**, `cd` into the `raivana` folder and run the activate line again (`.venv\Scripts\Activate.ps1` on
+Windows, `source .venv/bin/activate` on macOS/Linux).
+
+### 3. Check the installation
+
+```bash
+raivana doctor
+```
+
+Every line should read `OK` or `opt` (optional). The Claude engine shows as *off* until step 5. That's expected.
+
+### 4. Run it. No API key needed.
+
+```bash
+raivana demo                                   # full showcase on a sample hospital policy
+raivana demo --example bank                    # also: cloud
+raivana serve                                  # web app: open http://127.0.0.1:8000 in your browser (Ctrl+C to stop)
+```
+
+Translate your own policy:
+
+```bash
+raivana translate "Only doctors can prescribe medication. Nurses may view patient records during business hours."
+raivana translate -f examples/hospital/policy.txt -o out      # a text file in, XACML/NGAC/Cedar/Rego files out
+raivana test out/hospital.raivana.json -s role=nurse -a read -R type=medical_record -E hour=22
+raivana check out/hospital.raivana.json        # conflicts, redundant rules, validation
+raivana verify out/hospital.raivana.json       # proves the Cedar/Rego output makes the same decisions
+```
+
+`out/` now holds `hospital.xml` (XACML), `hospital.pml` (NGAC), `hospital.cedar`, `hospital.rego` and
+`hospital.raivana.json` (the editable policy).
+
+### 5. Optional: turn on Claude with your own API key
+
+The free offline engine handles standard policy phrasing. For informal, messy or non-English text, add
+**your own** Anthropic API key. Raivana ships with no key, and your key stays on your machine.
+
+1. Create a key at [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys).
+2. In the `raivana` folder, copy the template:
+   - Windows: `copy .env.example .env`
+   - macOS / Linux: `cp .env.example .env`
+3. Open `.env` in any text editor and paste your key after `ANTHROPIC_API_KEY=`, for example
+   `ANTHROPIC_API_KEY=sk-ant-...`. Save the file.
+4. Run `raivana doctor`. The Claude engine line should now say **enabled**.
+
+`.env` is listed in `.gitignore`, so it is never committed. You can also set `ANTHROPIC_API_KEY` as a
+normal environment variable, or put the `.env` file in `~/.raivana/.env` so it works from any folder.
+With a key, the default `auto` engine runs in **hybrid** mode: offline first, and only the sentences it
+can't handle go to Claude.
+
+### Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `raivana: command not found` / `not recognized` | The virtual environment isn't active. `cd raivana`, then run the activate line from step 2. |
+| `py` / `python3` not found | Install Python (step 1). Reopen the terminal afterwards. |
+| Claude engine *off* in `raivana doctor` | Check that `.env` is in the folder you run `raivana` from, and that the line reads `ANTHROPIC_API_KEY=sk-ant-...` with no spaces. |
+| `rego: opa CLI not on PATH` | Optional. Install [OPA](https://www.openpolicyagent.org/docs/latest/#running-opa) to verify Rego output locally. |
+| Port 8000 already in use | `raivana serve --port 8080` |
 
 > Need Raivana connected to SailPoint, Entra ID, Okta or AWS IAM? See
 > [Enterprise implementation](#enterprise-implementation---vector-access-group).
-
-To use the Claude engine, set `ANTHROPIC_API_KEY`. The default engine is `auto`: it runs in hybrid mode
-when a key is present and offline otherwise.
 
 ## Engines and cost
 
@@ -219,6 +307,11 @@ claude mcp add raivana -- raivana mcp
 ```
 
 Tools: `translate_policy`, `evaluate_access`, `analyze_policy`, `generate_policy_code` and `list_vocabulary`.
+
+If `raivana` isn't on the agent's PATH, use the full path to the executable inside your virtual
+environment, e.g. `.../raivana/.venv/bin/raivana mcp` (Windows: `...\raivana\.venv\Scripts\raivana.exe mcp`).
+Agents start the server from their own working folder, so put your key in `~/.raivana/.env` rather
+than the project's `.env`.
 
 ## Make it yours
 

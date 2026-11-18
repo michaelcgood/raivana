@@ -164,6 +164,10 @@ def main() -> None:
 
     Reference implementation of US Patent 10,606,957 B1.
     """
+    from .config import load_env
+
+    load_env()
+
 
 
 @main.command()
@@ -484,6 +488,42 @@ def archive_list() -> None:
 def archive_show(policy_id: str, version: str | None) -> None:
     arch = PolicyArchive()
     console.print_json(json.dumps(arch.load_manifest(policy_id, version)))
+
+
+@main.command()
+def doctor() -> None:
+    """Check your installation and configuration (Python, extras, API key, verifiers)."""
+    import os
+    import platform
+    import shutil
+
+    from .config import env_paths, mask
+    from .engines.llm import llm_available, resolve_model
+
+    def row(ok: bool | None, label: str, detail: str) -> None:
+        mark = {True: "[green]OK  [/]", False: "[red]MISS[/]", None: "[yellow]opt [/]"}[ok]
+        console.print(f"  {mark} {label:<26} {detail}")
+
+    console.print(f"[bold]raivana {__version__}[/] on Python {platform.python_version()} ({platform.system()})")
+    row(sys.version_info >= (3, 10), "Python >= 3.10", platform.python_version())
+    for mod, extra, label in (("anthropic", "llm", "Claude SDK"), ("fastapi", "server", "Web server"),
+                              ("mcp", "mcp", "MCP server"), ("cedarpy", "verify", "Cedar verifier")):
+        try:
+            __import__(mod)
+            row(True, label, f"installed ({mod})")
+        except ImportError:
+            row(None, label, f'not installed - pip install "raivana[{extra}]"')
+    found = [str(p) for p in env_paths() if p.is_file()]
+    row(None if not found else True, ".env file", ", ".join(found) or "none (optional - see .env.example)")
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    provider = os.environ.get("RAIVANA_PROVIDER", "anthropic")
+    if llm_available():
+        row(True, "Claude engine", f"enabled - provider {provider}, key {mask(key)}, model {resolve_model(None)}")
+    else:
+        row(None, "Claude engine", "off - set ANTHROPIC_API_KEY in .env to enable (offline engine still works)")
+    opa = shutil.which("opa")
+    row(None if not opa else True, "OPA (Rego verifier)", opa or "not on PATH (optional)")
+    console.print("\nTry: [bold]raivana demo[/]   then   [bold]raivana serve[/]")
 
 
 # --------------------------------------------------------------------------- servers & demos
