@@ -12,96 +12,96 @@ allow if decision == "Permit"
 # Source: Tellers can view customer accounts during business hours.
 r1 if {
 	input.action in {"read"}
-	_eq(input.subject.role, "teller")
-	_eq(input.resource.type, "account")
-	_gte(input.environment.hour, 9)
-	_lt(input.environment.hour, 17)
+	_eq(object.get(input, ["subject", "role"], null), "teller")
+	_eq(object.get(input, ["resource", "type"], null), "account")
+	_gte(object.get(input, ["environment", "hour"], null), 9)
+	_lt(object.get(input, ["environment", "hour"], null), 17)
 }
 
 # DENY users whose role is teller to perform approve on resources where type is transaction.
 # Source: Tellers cannot approve wire transfers.
 r2 if {
 	input.action in {"approve"}
-	_eq(input.subject.role, "teller")
-	_eq(input.resource.type, "transaction")
+	_eq(object.get(input, ["subject", "role"], null), "teller")
+	_eq(object.get(input, ["resource", "type"], null), "transaction")
 }
 
 # ALLOW users whose role is manager to perform approve on resources where type is transaction and amount is at most 25000.
 # Source: Managers can approve payments up to $25,000.
 r3 if {
 	input.action in {"approve"}
-	_eq(input.subject.role, "manager")
-	_eq(input.resource.type, "transaction")
-	_lte(input.resource.amount, 25000)
+	_eq(object.get(input, ["subject", "role"], null), "manager")
+	_eq(object.get(input, ["resource", "type"], null), "transaction")
+	_lte(object.get(input, ["resource", "amount"], null), 25000)
 }
 
 # ALLOW users whose role is cfo to perform approve on resources where type is transaction and amount is greater than 25000.
 # Source: Only the CFO may approve payments over $25,000.
 r4 if {
 	input.action in {"approve"}
-	_eq(input.subject.role, "cfo")
-	_eq(input.resource.type, "transaction")
-	_gt(input.resource.amount, 25000)
+	_eq(object.get(input, ["subject", "role"], null), "cfo")
+	_eq(object.get(input, ["resource", "type"], null), "transaction")
+	_gt(object.get(input, ["resource", "amount"], null), 25000)
 }
 
 # DENY users whose role is not cfo to perform approve on resources where type is transaction and amount is greater than 25000.
 # Source: Only the CFO may approve payments over $25,000.
 r5 if {
 	input.action in {"approve"}
-	not _eq(input.subject.role, "cfo")
-	_eq(input.resource.type, "transaction")
-	_gt(input.resource.amount, 25000)
+	not _eq(object.get(input, ["subject", "role"], null), "cfo")
+	_eq(object.get(input, ["resource", "type"], null), "transaction")
+	_gt(object.get(input, ["resource", "amount"], null), 25000)
 }
 
 # DENY users whose employment type is employee to perform approve on resources where type is expense report and the resource belongs to them.
 # Source: Employees cannot approve their own expense reports.
 r6 if {
 	input.action in {"approve"}
-	_eq(input.subject.employment_type, "employee")
-	_eq(input.resource.type, "expense_report")
-	_shares(input.resource.owner, input.subject.id)
+	_eq(object.get(input, ["subject", "employment_type"], null), "employee")
+	_eq(object.get(input, ["resource", "type"], null), "expense_report")
+	_shares(object.get(input, ["resource", "owner"], null), object.get(input, ["subject", "id"], null))
 }
 
 # ALLOW users whose role is accountant to perform read, write on resources where type is financial report, when network is corporate.
 # Source: Accountants can read and update the general ledger only from the corporate network.
 r7 if {
 	input.action in {"read", "write"}
-	_eq(input.subject.role, "accountant")
-	_eq(input.resource.type, "financial_report")
-	_eq(input.environment.network, "corporate")
+	_eq(object.get(input, ["subject", "role"], null), "accountant")
+	_eq(object.get(input, ["resource", "type"], null), "financial_report")
+	_eq(object.get(input, ["environment", "network"], null), "corporate")
 }
 
 # DENY users whose role is accountant to perform read, write on resources where type is financial report, when network is not corporate.
 # Source: Accountants can read and update the general ledger only from the corporate network.
 r8 if {
 	input.action in {"read", "write"}
-	_eq(input.subject.role, "accountant")
-	_eq(input.resource.type, "financial_report")
-	not _eq(input.environment.network, "corporate")
+	_eq(object.get(input, ["subject", "role"], null), "accountant")
+	_eq(object.get(input, ["resource", "type"], null), "financial_report")
+	not _eq(object.get(input, ["environment", "network"], null), "corporate")
 }
 
 # ALLOW users whose role is auditor to perform read on resources where type is financial report.
 # Source: Auditors can only read financial records.
 r9 if {
 	input.action in {"read"}
-	_eq(input.subject.role, "auditor")
-	_eq(input.resource.type, "financial_report")
+	_eq(object.get(input, ["subject", "role"], null), "auditor")
+	_eq(object.get(input, ["resource", "type"], null), "financial_report")
 }
 
 # DENY users whose role is auditor to perform write, create, delete, approve, share, export, initiate, reconcile on resources where type is financial report.
 # Source: Auditors can only read financial records.
 r10 if {
 	input.action in {"write", "create", "delete", "approve", "share", "export", "initiate", "reconcile"}
-	_eq(input.subject.role, "auditor")
-	_eq(input.resource.type, "financial_report")
+	_eq(object.get(input, ["subject", "role"], null), "auditor")
+	_eq(object.get(input, ["resource", "type"], null), "financial_report")
 }
 
 # DENY users whose employment type is contractor to perform export on resources where type is payroll.
 # Source: Contractors must not export payroll data.
 r11 if {
 	input.action in {"export"}
-	_eq(input.subject.employment_type, "contractor")
-	_eq(input.resource.type, "payroll")
+	_eq(object.get(input, ["subject", "employment_type"], null), "contractor")
+	_eq(object.get(input, ["resource", "type"], null), "payroll")
 }
 
 # ---------------------------------------------------------------- combining
@@ -136,9 +136,14 @@ reasons := sort([id | some id in permit_rules]) if {
 }
 
 # ---------------------------------------------------------------- helpers
+_as_list(x) := [] if x == null
+
 _as_list(x) := x if is_array(x)
 
-_as_list(x) := [x] if not is_array(x)
+_as_list(x) := [x] if {
+	x != null
+	not is_array(x)
+}
 
 _eq(x, v) if {
 	some e in _as_list(x)

@@ -22,9 +22,14 @@ from ..ir import AttributeRef, CombiningAlgorithm, Condition, Effect, Operator, 
 
 HELPERS = '''
 # ---------------------------------------------------------------- helpers
+_as_list(x) := [] if x == null
+
 _as_list(x) := x if is_array(x)
 
-_as_list(x) := [x] if not is_array(x)
+_as_list(x) := [x] if {
+	x != null
+	not is_array(x)
+}
 
 _eq(x, v) if {
 	some e in _as_list(x)
@@ -72,9 +77,9 @@ def _lit(v: Any) -> str:
 
 
 def _path(ref: AttributeRef) -> str:
-    seg = ref.id if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", ref.id) else None
-    base = f"input.{ref.category}"
-    return f"{base}.{seg}" if seg else f"{base}[{json.dumps(ref.id)}]"
+    # object.get with a null default: a missing attribute is an explicit null, never "undefined".
+    # (Undefined references behave surprisingly under `not`, which broke negated conditions.)
+    return f'object.get(input, [{json.dumps(ref.category)}, {json.dumps(ref.id)}], null)'
 
 
 def rego_condition(c: Condition) -> str:

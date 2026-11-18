@@ -12,107 +12,107 @@ allow if decision == "Permit"
 # Source: Only doctors can prescribe medication.
 r1 if {
 	input.action in {"prescribe"}
-	_eq(input.subject.role, "doctor")
-	_eq(input.resource.type, "prescription")
+	_eq(object.get(input, ["subject", "role"], null), "doctor")
+	_eq(object.get(input, ["resource", "type"], null), "prescription")
 }
 
 # DENY users whose role is not doctor to perform prescribe on resources where type is prescription.
 # Source: Only doctors can prescribe medication.
 r2 if {
 	input.action in {"prescribe"}
-	not _eq(input.subject.role, "doctor")
-	_eq(input.resource.type, "prescription")
+	not _eq(object.get(input, ["subject", "role"], null), "doctor")
+	_eq(object.get(input, ["resource", "type"], null), "prescription")
 }
 
 # ALLOW users whose role is nurse to perform read on resources where type is medical record, when the time is at or after 09:00 and the time is before 17:00.
 # Source: Nurses may view patient records during business hours.
 r3 if {
 	input.action in {"read"}
-	_eq(input.subject.role, "nurse")
-	_eq(input.resource.type, "medical_record")
-	_gte(input.environment.hour, 9)
-	_lt(input.environment.hour, 17)
+	_eq(object.get(input, ["subject", "role"], null), "nurse")
+	_eq(object.get(input, ["resource", "type"], null), "medical_record")
+	_gte(object.get(input, ["environment", "hour"], null), 9)
+	_lt(object.get(input, ["environment", "hour"], null), 17)
 }
 
 # ALLOW users whose role is nurse to perform read on resources where type is medical record, when emergency is satisfied.
 # Source: Nurses can view any patient record in an emergency.
 r4 if {
 	input.action in {"read"}
-	_eq(input.subject.role, "nurse")
-	_eq(input.resource.type, "medical_record")
-	_eq(input.environment.emergency, true)
+	_eq(object.get(input, ["subject", "role"], null), "nurse")
+	_eq(object.get(input, ["resource", "type"], null), "medical_record")
+	_eq(object.get(input, ["environment", "emergency"], null), true)
 }
 
 # ALLOW users whose role is doctor to perform write on resources where type is medical record and the resource's department matches the subject's department.
 # Source: Physicians may update medical records of patients in their department.
 r5 if {
 	input.action in {"write"}
-	_eq(input.subject.role, "doctor")
-	_eq(input.resource.type, "medical_record")
-	_shares(input.resource.department, input.subject.department)
+	_eq(object.get(input, ["subject", "role"], null), "doctor")
+	_eq(object.get(input, ["resource", "type"], null), "medical_record")
+	_shares(object.get(input, ["resource", "department"], null), object.get(input, ["subject", "department"], null))
 }
 
 # ALLOW users whose role is billing clerk to perform read on resources where type is billing record.
 # Source: Billing staff can view billing records
 r6 if {
 	input.action in {"read"}
-	_eq(input.subject.role, "billing_clerk")
-	_eq(input.resource.type, "billing_record")
+	_eq(object.get(input, ["subject", "role"], null), "billing_clerk")
+	_eq(object.get(input, ["resource", "type"], null), "billing_record")
 }
 
 # DENY users whose role is billing clerk to perform read on resources where type is medical record.
 # Source: Billing staff cannot view medical records.
 r7 if {
 	input.action in {"read"}
-	_eq(input.subject.role, "billing_clerk")
-	_eq(input.resource.type, "medical_record")
+	_eq(object.get(input, ["subject", "role"], null), "billing_clerk")
+	_eq(object.get(input, ["resource", "type"], null), "medical_record")
 }
 
 # ALLOW users whose role is receptionist to perform create, write on resources where type is appointment.
 # Source: Receptionists can create and update appointments.
 r8 if {
 	input.action in {"create", "write"}
-	_eq(input.subject.role, "receptionist")
-	_eq(input.resource.type, "appointment")
+	_eq(object.get(input, ["subject", "role"], null), "receptionist")
+	_eq(object.get(input, ["resource", "type"], null), "appointment")
 }
 
 # ALLOW users whose role is psychiatrist to perform read on resources where sensitivity is psychotherapy.
 # Source: Psychotherapy notes can only be read by psychiatrists.
 r9 if {
 	input.action in {"read"}
-	_eq(input.subject.role, "psychiatrist")
-	_eq(input.resource.sensitivity, "psychotherapy")
+	_eq(object.get(input, ["subject", "role"], null), "psychiatrist")
+	_eq(object.get(input, ["resource", "sensitivity"], null), "psychotherapy")
 }
 
 # DENY users whose role is not psychiatrist to perform read on resources where sensitivity is psychotherapy.
 # Source: Psychotherapy notes can only be read by psychiatrists.
 r10 if {
 	input.action in {"read"}
-	not _eq(input.subject.role, "psychiatrist")
-	_eq(input.resource.sensitivity, "psychotherapy")
+	not _eq(object.get(input, ["subject", "role"], null), "psychiatrist")
+	_eq(object.get(input, ["resource", "sensitivity"], null), "psychotherapy")
 }
 
 # DENY users whose employment type is contractor to perform any action on resources where type is medical record, when network is not corporate.
 # Source: Contractors cannot access patient records unless they are on the corporate network.
 r11 if {
-	_eq(input.subject.employment_type, "contractor")
-	_eq(input.resource.type, "medical_record")
-	not _eq(input.environment.network, "corporate")
+	_eq(object.get(input, ["subject", "employment_type"], null), "contractor")
+	_eq(object.get(input, ["resource", "type"], null), "medical_record")
+	not _eq(object.get(input, ["environment", "network"], null), "corporate")
 }
 
 # ALLOW users whose employment type is contractor to perform any action on resources where type is medical record, when network is corporate.
 # Source: Contractors cannot access patient records unless they are on the corporate network.
 r12 if {
-	_eq(input.subject.employment_type, "contractor")
-	_eq(input.resource.type, "medical_record")
-	_eq(input.environment.network, "corporate")
+	_eq(object.get(input, ["subject", "employment_type"], null), "contractor")
+	_eq(object.get(input, ["resource", "type"], null), "medical_record")
+	_eq(object.get(input, ["environment", "network"], null), "corporate")
 }
 
 # DENY anyone to perform delete on resources where type is audit log.
 # Source: Nobody may delete audit logs.
 r13 if {
 	input.action in {"delete"}
-	_eq(input.resource.type, "audit_log")
+	_eq(object.get(input, ["resource", "type"], null), "audit_log")
 }
 
 # ---------------------------------------------------------------- combining
@@ -149,9 +149,14 @@ reasons := sort([id | some id in permit_rules]) if {
 }
 
 # ---------------------------------------------------------------- helpers
+_as_list(x) := [] if x == null
+
 _as_list(x) := x if is_array(x)
 
-_as_list(x) := [x] if not is_array(x)
+_as_list(x) := [x] if {
+	x != null
+	not is_array(x)
+}
 
 _eq(x, v) if {
 	some e in _as_list(x)

@@ -12,109 +12,109 @@ allow if decision == "Permit"
 # Source: Developers can read source code repositories.
 r1 if {
 	input.action in {"read"}
-	_eq(input.subject.role, "developer")
-	_eq(input.resource.type, "source_code")
+	_eq(object.get(input, ["subject", "role"], null), "developer")
+	_eq(object.get(input, ["resource", "type"], null), "source_code")
 }
 
 # ALLOW users whose role is developer to perform deploy on resources where tier is staging.
 # Source: Developers can deploy to staging.
 r2 if {
 	input.action in {"deploy"}
-	_eq(input.subject.role, "developer")
-	_eq(input.resource.tier, "staging")
+	_eq(object.get(input, ["subject", "role"], null), "developer")
+	_eq(object.get(input, ["resource", "tier"], null), "staging")
 }
 
 # ALLOW users whose role is devops to perform deploy on resources where tier is production.
 # Source: Only DevOps engineers can deploy to production.
 r3 if {
 	input.action in {"deploy"}
-	_eq(input.subject.role, "devops")
-	_eq(input.resource.tier, "production")
+	_eq(object.get(input, ["subject", "role"], null), "devops")
+	_eq(object.get(input, ["resource", "tier"], null), "production")
 }
 
 # DENY users whose role is not devops to perform deploy on resources where tier is production.
 # Source: Only DevOps engineers can deploy to production.
 r4 if {
 	input.action in {"deploy"}
-	not _eq(input.subject.role, "devops")
-	_eq(input.resource.tier, "production")
+	not _eq(object.get(input, ["subject", "role"], null), "devops")
+	_eq(object.get(input, ["resource", "tier"], null), "production")
 }
 
 # ALLOW users whose role is devops to perform deploy on resources where tier is production, when the time is outside 06:00-22:00.
 # Source: DevOps engineers can deploy to production only between 10pm and 6am.
 r5 if {
 	input.action in {"deploy"}
-	_eq(input.subject.role, "devops")
-	_eq(input.resource.tier, "production")
-	not _in(input.environment.hour, {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21})
+	_eq(object.get(input, ["subject", "role"], null), "devops")
+	_eq(object.get(input, ["resource", "tier"], null), "production")
+	not _in(object.get(input, ["environment", "hour"], null), {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21})
 }
 
 # DENY users whose role is devops to perform deploy on resources where tier is production, when the time is within 06:00-22:00.
 # Source: DevOps engineers can deploy to production only between 10pm and 6am.
 r6 if {
 	input.action in {"deploy"}
-	_eq(input.subject.role, "devops")
-	_eq(input.resource.tier, "production")
-	_in(input.environment.hour, {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21})
+	_eq(object.get(input, ["subject", "role"], null), "devops")
+	_eq(object.get(input, ["resource", "tier"], null), "production")
+	_in(object.get(input, ["environment", "hour"], null), {6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21})
 }
 
 # ALLOW users whose role is admin to perform any action on resources where tier is production and type is server, when mfa is satisfied.
 # Source: Administrators must use MFA to access production servers.
 r7 if {
-	_eq(input.subject.role, "admin")
-	_eq(input.resource.tier, "production")
-	_eq(input.resource.type, "server")
-	_eq(input.environment.mfa, true)
+	_eq(object.get(input, ["subject", "role"], null), "admin")
+	_eq(object.get(input, ["resource", "tier"], null), "production")
+	_eq(object.get(input, ["resource", "type"], null), "server")
+	_eq(object.get(input, ["environment", "mfa"], null), true)
 }
 
 # DENY users whose role is admin to perform any action on resources where tier is production and type is server, when mfa is not satisfied.
 # Source: Administrators must use MFA to access production servers.
 r8 if {
-	_eq(input.subject.role, "admin")
-	_eq(input.resource.tier, "production")
-	_eq(input.resource.type, "server")
-	not _eq(input.environment.mfa, true)
+	_eq(object.get(input, ["subject", "role"], null), "admin")
+	_eq(object.get(input, ["resource", "tier"], null), "production")
+	_eq(object.get(input, ["resource", "type"], null), "server")
+	not _eq(object.get(input, ["environment", "mfa"], null), true)
 }
 
 # ALLOW users whose role is dba to perform manage on resources where tier is production and type is database, when device is managed.
 # Source: Database administrators can manage production databases from managed devices.
 r9 if {
 	input.action in {"manage"}
-	_eq(input.subject.role, "dba")
-	_eq(input.resource.tier, "production")
-	_eq(input.resource.type, "database")
-	_eq(input.environment.device, "managed")
+	_eq(object.get(input, ["subject", "role"], null), "dba")
+	_eq(object.get(input, ["resource", "tier"], null), "production")
+	_eq(object.get(input, ["resource", "type"], null), "database")
+	_eq(object.get(input, ["environment", "device"], null), "managed")
 }
 
 # DENY users whose role is service account to perform delete on resources where type is backup.
 # Source: Service accounts cannot delete backups.
 r10 if {
 	input.action in {"delete"}
-	_eq(input.subject.role, "service_account")
-	_eq(input.resource.type, "backup")
+	_eq(object.get(input, ["subject", "role"], null), "service_account")
+	_eq(object.get(input, ["resource", "type"], null), "backup")
 }
 
 # DENY users whose employment type is contractor to perform any action on resources where type is secret, when network is not corporate.
 # Source: Contractors cannot access secrets unless they are on the VPN.
 r11 if {
-	_eq(input.subject.employment_type, "contractor")
-	_eq(input.resource.type, "secret")
-	not _eq(input.environment.network, "corporate")
+	_eq(object.get(input, ["subject", "employment_type"], null), "contractor")
+	_eq(object.get(input, ["resource", "type"], null), "secret")
+	not _eq(object.get(input, ["environment", "network"], null), "corporate")
 }
 
 # ALLOW users whose employment type is contractor to perform any action on resources where type is secret, when network is corporate.
 # Source: Contractors cannot access secrets unless they are on the VPN.
 r12 if {
-	_eq(input.subject.employment_type, "contractor")
-	_eq(input.resource.type, "secret")
-	_eq(input.environment.network, "corporate")
+	_eq(object.get(input, ["subject", "employment_type"], null), "contractor")
+	_eq(object.get(input, ["resource", "type"], null), "secret")
+	_eq(object.get(input, ["environment", "network"], null), "corporate")
 }
 
 # DENY users whose role is intern to perform any action on resources where tier is production.
 # Source: Interns cannot access production.
 r13 if {
-	_eq(input.subject.role, "intern")
-	_eq(input.resource.tier, "production")
+	_eq(object.get(input, ["subject", "role"], null), "intern")
+	_eq(object.get(input, ["resource", "tier"], null), "production")
 }
 
 # ---------------------------------------------------------------- combining
@@ -151,9 +151,14 @@ reasons := sort([id | some id in permit_rules]) if {
 }
 
 # ---------------------------------------------------------------- helpers
+_as_list(x) := [] if x == null
+
 _as_list(x) := x if is_array(x)
 
-_as_list(x) := [x] if not is_array(x)
+_as_list(x) := [x] if {
+	x != null
+	not is_array(x)
+}
 
 _eq(x, v) if {
 	some e in _as_list(x)
