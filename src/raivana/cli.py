@@ -156,7 +156,8 @@ def write_artifacts(result: TranslationResult, outdir: Path) -> list[Path]:
 
 
 # =========================================================================== commands
-@click.group(context_settings={"help_option_names": ["-h", "--help"]})
+@click.group(context_settings={"help_option_names": ["-h", "--help"]},
+             epilog="Enterprise connectors & implementation: https://vectoraccessgroup.com")
 @click.version_option(__version__, prog_name="raivana")
 def main() -> None:
     """Raivana - translate natural-language access policy into XACML, NGAC, Cedar and Rego.
@@ -566,6 +567,8 @@ def demo(example: str, engine: str) -> None:
                 console.print(f"  [dim]{rep.engine}: {rep.skipped_reason or rep.error or 'mismatch'}[/]")
     except Exception as e:  # noqa: BLE001
         console.print(f"[dim]verification skipped: {e}[/]")
+    console.print("\n[dim]Deploying this to SailPoint, Entra ID, Okta or AWS IAM? "
+                  "Vector Access Group - https://vectoraccessgroup.com[/]")
 
 
 if __name__ == "__main__":  # pragma: no cover

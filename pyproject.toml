@@ -11,7 +11,7 @@ license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 requires-python = ">=3.10"
 authors = [
-  { name = "Michael Good" },
+  { name = "Michael Good", email = "michael@vectoraccessgroup.com" },
   { name = "Benjamin Coffinberger" },
 ]
 keywords = ["access control", "iam", "abac", "xacml", "ngac", "cedar", "opa", "rego", "policy", "nlp", "llm", "claude", "mcp"]
@@ -45,6 +45,7 @@ raivana = "raivana.cli:main"
 [project.urls]
 Homepage = "https://github.com/michaelcgood/raivana"
 Patent = "https://patents.google.com/patent/US10606957B1/en"
+"Commercial support" = "https://vectoraccessgroup.com"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/raivana"]

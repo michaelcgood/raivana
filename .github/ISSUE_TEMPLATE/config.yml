@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Enterprise implementation (SailPoint, Entra ID, Okta, AWS IAM)
+    url: https://vectoraccessgroup.com
+    about: Connectors, compliance packs and supported deployments from the inventors at Vector Access Group.
+  - name: Security vulnerability
+    url: mailto:michael@vectoraccessgroup.com?subject=Raivana%20security
+    about: Please report vulnerabilities privately by email.

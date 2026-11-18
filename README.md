@@ -87,6 +87,9 @@ raivana verify out/policy.raivana.json           # differential check vs Cedar /
 raivana serve                                    # web UI at http://127.0.0.1:8000
 ```
 
+> Need Raivana connected to SailPoint, Entra ID, Okta or AWS IAM? See
+> [Enterprise implementation](#enterprise-implementation---vector-access-group).
+
 To use the Claude engine, set `ANTHROPIC_API_KEY`. The default engine is `auto`: it runs in hybrid mode
 when a key is present and offline otherwise.
 
@@ -256,11 +259,23 @@ Domain packs ship for **healthcare**, **finance** and **cloud** on top of a core
   are flagged.
 - Generated policy is a draft for expert review, not a substitute for it.
 
-## Enterprise
+## Enterprise implementation - Vector Access Group
 
-Raivana is open source under Apache-2.0. Organisations that need enterprise connectors (SailPoint,
-Microsoft Entra ID, Okta, AWS IAM), multi-tenant policy lifecycle management, custom vocabulary and
-evaluation programmes, or supported deployments with SLAs can work directly with the inventors.
+Raivana is free and open source. Turning it into a governed, production policy pipeline for your
+organisation is what **[Vector Access Group](https://vectoraccessgroup.com)**, the inventors'
+consultancy, does:
+
+- **Connectors** that deploy generated policy to, and read deployed policy from, **SailPoint**,
+  **Microsoft Entra ID**, **Okta**, **Ping** and **AWS IAM / Verified Permissions**
+- **Policy drift detection**: continuously compare what your written policy says with what is
+  actually deployed
+- **Compliance packs** for HIPAA, SOX, PCI DSS and SOC 2, with control mapping and audit evidence
+- **Your vocabulary and your rules**: custom dictionaries, policy sets and evaluation suites built from
+  your own policies, so translation accuracy is measured on your text
+- **Policy lifecycle**: approval workflows, versioning, sign-off and supported deployments with SLAs
+
+**Talk to the inventors:** [michael@vectoraccessgroup.com](mailto:michael@vectoraccessgroup.com?subject=Raivana%20enterprise)
+· [vectoraccessgroup.com](https://vectoraccessgroup.com)
 
 ## About
 
@@ -269,4 +284,5 @@ Raivana was created by **Michael Good** and **Benjamin Coffinberger**, the inven
 before LLMs made natural-language policy mainstream. This project brings that method to the modern
 IAM stack. See [PATENTS.md](PATENTS.md) for how the patent and the license interact.
 
-Licensed under the [Apache License 2.0](LICENSE).
+Licensed under the [Apache License 2.0](LICENSE). "Raivana" is a trademark of its authors; see
+[TRADEMARKS.md](TRADEMARKS.md).

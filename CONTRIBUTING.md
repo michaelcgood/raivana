@@ -24,6 +24,12 @@ differential tests run locally (CI always runs them).
 - **Eval cases**: real-world policy sentences that Raivana gets wrong are the most valuable bug reports.
 - **New targets**: a generator only needs `generate(policy) -> str` and must agree with the reference PDP. Add it to `verify.py`.
 
+## Contributor License Agreement
+
+Before your first pull request can be merged, you must agree to the [Contributor License Agreement](CLA.md)
+by ticking the box in the pull request template. The CLA lets the maintainers keep offering Raivana under
+Apache-2.0 and in commercial editions. You keep the copyright to your contribution.
+
 ## Rules of the road
 
 - Every behaviour change needs a test. Every new phrasing needs an eval case.
